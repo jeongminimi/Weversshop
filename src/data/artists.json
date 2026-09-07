@@ -1,0 +1,65 @@
+[
+  {
+    "id": "seventeen",
+    "name": "세븐틴 (SEVENTEEN)",
+    "agency": "플레디스 엔터테인먼트",
+    "fandom": "CARAT",
+    "image": "/img/SVT.jpg",
+    "status": "AI 큐레이션 가동 중",
+    "active": true
+  },
+  {
+    "id": "txt",
+    "name": "투모로우바이투게더",
+    "agency": "빅히트 뮤직",
+    "fandom": "MOA",
+    "image": "/img/TXT.jpg",
+    "status": "파이프라인 준비 중",
+    "active": true
+  },
+  {
+    "id": "newjeans",
+    "name": "뉴진스 (NewJeans)",
+    "agency": "ADOR",
+    "fandom": "Bunnies",
+    "image": "/img/NewJeans.jpg",
+    "status": "파이프라인 준비 중",
+    "active": false
+  },
+  {
+    "id": "enhypen",
+    "name": "엔하이픈 (ENHYPEN)",
+    "agency": "빌리프랩",
+    "fandom": "ENGENE",
+    "image": "/img/ENHYPEN.jpg",
+    "status": "파이프라인 준비 중",
+    "active": false
+  },
+  {
+    "id": "bts",
+    "name": "방탄소년단 (BTS)",
+    "agency": "빅히트 뮤직",
+    "fandom": "ARMY",
+    "image": "/img/BTS.jpg",
+    "status": "파이프라인 준비 중",
+    "active": false
+  },
+  {
+    "id": "le_sserafim",
+    "name": "르세라핌 (LE SSERAFIM)",
+    "agency": "쏘스뮤직",
+    "fandom": "FEARNOT",
+    "image": "/img/LE SSERAFIM.jpg",
+    "status": "파이프라인 준비 중",
+    "active": false
+  },
+  {
+    "id": "illit",
+    "name": "아일릿 (ILLIT)",
+    "agency": "빌리프랩",
+    "fandom": "GLLIT",
+    "image": "/img/ILLIT.jpg",
+    "status": "파이프라인 준비 중",
+    "active": true
+  }
+]

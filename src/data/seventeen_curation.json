@@ -1,0 +1,36 @@
+[
+  {
+    "id": "svt-01",
+    "category_badge": "콘서트 D-Day 생존템",
+    "headline": "팔로우 투어 앙코르: 3시간 무한 '아주 NICE' 대비 생존 가이드",
+    "quote": "캐럿들 오늘 신발 진짜 편한 거 신고 왔죠? 우리 오늘 끝날 때까지 집에 못 가요!",
+    "source": "2024 SEVENTEEN TOUR 'FOLLOW' AGAIN 스타디움 멘트",
+    "product": {
+      "name": "공식 응원봉 캐럿봉 Ver.3",
+      "tag": "OFFICIAL MD",
+      "reason": "중앙 원격 제어 연동으로 전광판 및 특수효과 라이팅 연출 필수 싱크",
+      "img": "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=600&auto=format&fit=crop&q=60",
+      "link": "https://weverseshop.io"
+    },
+    "sub_feature": {
+      "type": "예습 플레이리스트",
+      "title": "콘서트 전 떼창 필수곡 5선 (콜삼, 아나스, 손오공)",
+      "link": "https://music.youtube.com"
+    }
+  },
+  {
+    "id": "svt-02",
+    "category_badge": "휴가 & 브이로그 애용템",
+    "headline": "나나투어 이탈리아: 장시간 비행과 빡빡한 일정 속 피부 진정 앰플",
+    "quote": "비행기 오래 타거나 호텔이 건조할 때 수시로 바르는데 속당김이 싹 잡혀요.",
+    "source": "나나투어 비하인드 & 위버스 룸 라이브",
+    "product": {
+      "name": "세라마이드 수분 진정 캡슐 앰플",
+      "tag": "LIFESTYLE / SKINCARE",
+      "reason": "멤버들이 해외 투어 및 이동 시 실제 애용하는 파우치 필수템",
+      "img": "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=600&auto=format&fit=crop&q=60",
+      "link": "https://oliveyoung.co.kr"
+    },
+    "sub_feature": null
+  }
+]

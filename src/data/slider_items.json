@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1,
+    "title": "SEVENTEEN TOUR 'FOLLOW' AGAIN TO SEOUL",
+    "subtitle": "상암 월드컵경기장 앙코르 투어 실시간 맥락 추천",
+    "desc": "공연 D-Day 필수템부터 AI가 알려주는 실전 가이드",
+    "image": "/img/svt_slider.jpg",
+    "artistId": "seventeen"
+  },
+  {
+    "id": 2,
+    "title": "TOMORROW X TOGETHER",
+    "subtitle": "New Album 'Chapter2 : Stigma'",
+    "desc": "올 가을 돌아온 TXT의 새로운 앨범 미리 만나보세요.",
+    "image": "/img/TXT.jpg",
+    "artistId": "TXT"
+  },
+  {
+    "id": 3,
+    "title": "BONGBONGEE JAPAN ORIGINAL Merch",
+    "subtitle": "일본 공식굿즈 봉봉이 갸루버전",
+    "desc": "지금 위버스샵에서 예약 판매 중!",
+    "image": "/img/goods.webp",
+    "artistId": "seventeen"
+  }
+]

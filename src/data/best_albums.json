@@ -1,0 +1,106 @@
+[
+{
+"id": "alb-01",
+"title": "'ARIRANG' (Standard Vinyl) (Random)",
+"price": "41,400",
+"badges": ["PICKUP", "특전제공"],
+"shopUrl": "https://weverseshop.io",
+"thumbs": [
+    "/img/bts1.png",
+    "/img/bts2.png",
+    "/img/bts3.png"
+],
+"banner": "/img/bts4.png"
+},
+{
+"id": "alb-02",
+"title": "11th Mini Album 'SEVENTEENTH HEAVEN'",
+"price": "38,600",
+"badges": ["PICKUP", "특전제공"],
+"shopUrl": "https://weverseshop.io",
+"thumbs": [
+    "/img/svt1.png",
+    "/img/svt2.png",
+    "/img/svt3.png"
+],
+"banner": "/img/svt4.png"
+},
+{
+"id": "alb-03",
+"title": "4th Mini Album ‘MAMIHLAPINATAPAI’",
+"price": "22,000",
+"badges": ["PICKUP", "특전제공"],
+"shopUrl": "https://weverseshop.io",
+"thumbs": [
+    "/img/ILLIT1.png",
+    "/img/ILLIT2.png",
+    "/img/ILLIT3.png"
+],
+"banner":"/img/ILLIT4.png"
+},
+{
+"id": "alb-04",
+"title": "ROMANCE : UNTOLD -daydream-",
+"price": "22,000",
+"badges": ["특전제공"],
+"shopUrl": "https://weverseshop.io",
+"thumbs": [
+    "/img/ENHYPEN1.png",
+    "/img/ENHYPEN2.png",
+    "/img/ENHYPEN3.jpg"
+],
+"banner":"/img/ENHYPEN4.png"
+},
+{
+"id": "alb-05",
+"title": "2nd Single Album 'Made My Night' CHEMICAL NIGHT",
+"price": "11,900",
+"badges": ["PICKUP"],
+"shopUrl": "https://weverseshop.io",
+"thumbs": [
+    "/img/LESSERAFIM1.png",
+    "/img/LESSERAFIM2.png",
+    "/img/LESSERAFIM3.png"
+],
+"banner": "/img/LESSERAFIM4.png"
+},
+{
+"id": "alb-06",
+"title": "피철인 1st Mini Album '吉BOARD' USB Ver.",
+"price": "20,500",
+"badges": ["특전제공"],
+"shopUrl": "https://weverseshop.io",
+"thumbs": [
+    "/img/svt3.png",
+    "/img/svt4.png",
+    "/img/svt2.png"
+],
+"banner": "/img/svt1.png"
+},
+{
+"id": "alb-07",
+"title": "ARIRANG' (T-Shirt CD Box Set)",
+"price": "24,300",
+"badges": ["PICKUP"],
+"shopUrl": "https://weverseshop.io",
+"thumbs": [
+    "/img/bts3.png",
+    "/img/bts4.png",
+    "/img/bts1.png"
+],
+"banner": "/img/bts2.png"
+},
+{
+"id": "alb-08",
+"title": "2nd EP 'Get Up' THE POWERPUFF GIRLS",
+"price": "19,300",
+"badges": ["특전제공"],
+"shopUrl": "https://weverseshop.io",
+"thumbs": [
+    "/img/NJ1.png",
+    "/img/NJ2.png",
+    "/img/NJ3.png"
+],
+"banner": "/img/NJ4.png"
+}
+]

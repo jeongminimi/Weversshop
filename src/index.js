@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import 'bootstrap/dist/css/bootstrap.min.css'; // 🔥 이 한 줄을 추가해 주세요!
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
