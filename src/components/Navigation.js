@@ -7,10 +7,11 @@ import {
   InputGroup,
   Button,
 } from "react-bootstrap";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom"; // 🔥 중복 import 정리
 import { FaMagic, FaSearch, FaBell, FaUserCircle } from "react-icons/fa";
 
 export default function Navigation() {
+  const navigate = useNavigate(); // 🔥 1. 네비게이트 함수 선언
   const [hasNewAlert, setHasNewAlert] = useState(true); // 새 알림 상태
 
   return (
@@ -98,13 +99,13 @@ export default function Navigation() {
               </Button>
             </div>
 
-            {/* 로그인 버튼 */}
+            {/* 🔥 2. 로그인 버튼: 클릭 시 로그인 페이지(/login)로 이동 */}
             <Button
               variant="outline-light"
               size="sm"
               className="rounded-pill px-3 py-1 d-flex align-items-center gap-1.5 border-secondary text-light fw-medium"
               style={{ fontSize: "0.82rem" }}
-              onClick={() => alert("로그인 창이 열립니다.")}
+              onClick={() => navigate("/login")}
             >
               <FaUserCircle size={14} className="text-info" />
               <span>로그인</span>

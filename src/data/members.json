@@ -1,0 +1,195 @@
+{
+  "seventeen": [
+    {
+      "id": "scoups",
+      "name": "에스쿱스",
+      "engName": "S.COUPS",
+      "role": "총괄리더 / 힙합팀",
+      "desc": "세븐틴과 캐럿의 촐괄리더. 파워풀한 랩과 카리스마 넘치는 무대 장악력.",
+      "image": "/img/1.jpg"
+    },
+    {
+      "id": "jeonghan",
+      "name": "정한",
+      "engName": "JEONGHAN",
+      "role": "보컬팀",
+      "desc": "따뜻하고 매력적인 보컬 음색과 천사 같은 비주얼, 팀 내 영리한 브레인.",
+      "image": "/img/2.jpg"
+    },
+    {
+      "id": "joshua",
+      "name": "조슈아",
+      "engName": "JOSHUA",
+      "role": "보컬팀",
+      "desc": "감미로운 어쿠스틱 보이스와 다정한 젠틀맨 매력의 소유자.",
+      "image": "/img/3.jpg"
+    },
+    {
+      "id": "jun",
+      "name": "준",
+      "engName": "JUN",
+      "role": "퍼포먼스팀",
+      "desc": "유려한 춤선과 독보적인 비주얼, 섬세한 연기력을 겸비한 퍼포머.",
+      "image": "/img/4.jpg"
+    },
+    {
+      "id": "hoshi",
+      "name": "호시",
+      "engName": "HOSHI",
+      "role": "퍼포먼스팀",
+      "desc": "호랑이의 시선으로 무대를 지배하는 세븐틴 퍼포먼스의 핵심 주역.",
+      "image": "/img/5.jpg"
+    },
+    {
+      "id": "wonwoo",
+      "name": "원우",
+      "engName": "WONWOO",
+      "role": "힙합팀",
+      "desc": "깊고 매력적인 저음 래핑과 지적인 분위기를 지닌 올라운더.",
+      "image": "/img/6.jpg"
+    },
+    {
+      "id": "woozi",
+      "name": "우지",
+      "engName": "WOOZI",
+      "role": "보컬팀 / 총괄 프로듀서",
+      "desc": "세븐틴의 모든 음악적 정체성을 구축한 천재 프로듀서 겸 보컬.",
+      "image": "/img/7.jpg"
+    },
+    {
+      "id": "the8",
+      "name": "디에잇",
+      "engName": "THE 8",
+      "role": "퍼포먼스팀",
+      "desc": "감각적인 예술적 감성과 감미로운 음색, 독창적인 퍼포먼스를 선보이는 아티스트.",
+      "image": "/img/8.jpg"
+    },
+    {
+      "id": "mingyu",
+      "name": "민규",
+      "engName": "MINGYU",
+      "role": "힙합팀",
+      "desc": "에너제틱한 피지컬과 다재다능한 랩 메이킹 능력을 겸비한 팀의 활력소.",
+      "image": "/img/9.jpg"
+    },
+    {
+      "id": "dk",
+      "name": "도겸",
+      "engName": "DK",
+      "role": "보컬팀",
+      "desc": "폭발적인 성량과 시원하게 뻗는 고음, 밝은 긍정 에너지를 전하는 명품 보컬.",
+      "image": "/img/10.jpg"
+    },
+    {
+      "id": "seungkwan",
+      "name": "승관",
+      "engName": "SEUNGKWAN",
+      "role": "보컬팀",
+      "desc": "호소력 짙은 감성 보컬과 뛰어난 음악적 감각을 지닌 보컬 에이스.",
+      "image": "/img/11.jpg"
+    },
+    {
+      "id": "vernon",
+      "name": "버논",
+      "engName": "VERNON",
+      "role": "힙합팀",
+      "desc": "독보적인 그루브와 자유로운 플로우를 구사하는 트렌디한 래퍼.",
+      "image": "/img/12.jpg"
+    },
+    {
+      "id": "dino",
+      "name": "디노",
+      "engName": "DINO",
+      "role": "퍼포먼스팀 / 막내",
+      "desc": "무한한 열정과 파워풀한 안무 소화력으로 무대를 채우는 작은 거인.",
+      "image": "/img/13.jpg"
+    }
+  ],
+
+  "txt": [
+  {
+    "id": "soobin",
+    "name": "수빈",
+    "engName": "SOOBIN",
+    "role": "리더 / 보컬",
+    "desc": "온화하고 배려 깊은 리더십과 맑고 감미로운 음색으로 팀의 중심을 든든하게 지키는 리더.",
+    "image": "/img/t1.webp"
+  },
+  {
+    "id": "yeonjun",
+    "name": "연준",
+    "engName": "YEONJUN",
+    "role": "보컬 / 랩 / 댄스",
+    "desc": "독보적인 그루브와 무대 장악력, 랩·댄스·보컬을 모두 섭렵한 트렌드세터이자 잇보이.",
+    "image": "/img/t2.webp"
+  },
+  {
+    "id": "beomgyu",
+    "name": "범규",
+    "engName": "BEOMGYU",
+    "role": "보컬 / 댄스",
+    "desc": "매력적인 중저음 보이스와 몽환적인 비주얼, 밝은 에너지로 분위기를 이끄는 무드메이커.",
+    "image": "/img/t3.webp"
+  },
+  {
+    "id": "taehyun",
+    "name": "태현",
+    "engName": "TAEHYUN",
+    "role": "보컬",
+    "desc": "시원하고 흔들림 없는 라이브 고음 가창력과 명쾌하고 지적인 매력을 지닌 보컬리스트.",
+    "image": "/img/t4.webp"
+  },
+  {
+    "id": "hueningkai",
+    "name": "휴닝카이",
+    "engName": "HUENINGKAI",
+    "role": "보컬 / 악기 연주 / 막내",
+    "desc": "풍부한 성량과 뛰어난 악기 연주 실력, 다정하고 사랑스러운 에너지를 전하는 글로벌 막내.",
+    "image": "/img/t5.webp"
+  }
+],
+
+
+"illit" : [
+  {
+    "id": "yunah",
+    "name": "윤아",
+    "engName": "YUNAH",
+    "role": "보컬 / 퍼포먼스",
+    "desc": "시원시원한 피지컬과 카리스마, 유쾌 당당 에너지로 팀을 이끄는 맏언니.",
+    "image": "/img/i1.webp"
+  },
+  {
+    "id": "minju",
+    "name": "민주",
+    "engName": "MINJU",
+    "role": "보컬",
+    "desc": "몽환적이면서도 독보적인 음색, 맑은 비주얼을 자랑하는 감성 보컬.",
+    "image": "/img/i2.webp"
+  },
+  {
+    "id": "moka",
+    "name": "모카",
+    "engName": "MOKA",
+    "role": "퍼포먼스 / 보컬",
+    "desc": "섬세한 춤선과 탁월한 표정 연기로 시선을 사로잡는 콘셉트 소화력의 장인.",
+    "image": "/img/i3.webp"
+  },
+  {
+    "id": "wonhee",
+    "name": "원희",
+    "engName": "WONHEE",
+    "role": "보컬",
+    "desc": "특유의 맑고 청량한 보이스와 사랑스러운 에너지로 사로잡는 입덕 요정.",
+    "image": "/img/i4.webp"
+  },
+  {
+    "id": "iroha",
+    "name": "이로하",
+    "engName": "IROHA",
+    "role": "메인댄스 / 랩 / 막내",
+    "desc": "탄탄한 힙합 댄스 실력과 깊이 있는 리듬감을 지닌 막내 퍼포머.",
+    "image": "/img/i5.webp"
+  }
+]
+}
