@@ -1,0 +1,42 @@
+[
+  {
+    "id": "g1",
+    "name": "Official Light Stick VER.3 10th Anniv",
+    "price": 49000,
+    "img": "https://cdn-contents.weverseshop.io/public/shop/ecc3f2c4a93629414f5f22cc95736c67.png?w=400&auto=format&fit=crop&q=80",
+    "category": "CONCERT",
+    "productUrl": "https://shop.weverse.io/ko/shop/KRW/artists/7/sales/36527/"
+  },
+  {
+    "id": "g2",
+    "name": "월드투어 콘서트 굿즈 Hoodie",
+    "price": 119000,
+    "img": "https://cdn-contents.weverseshop.io/public/shop/e55077cd044118e70e9f37cb0ff45929.png?w=400&auto=format&fit=crop&q=80",
+    "category": "CONCERT",
+    "productUrl": "https://shop.weverse.io/ko/shop/KRW/artists/7/sales/56025/"
+  },
+  {
+    "id": "g3",
+    "name": "CARAT MEMBERSHIP KIT",
+    "price": 15000,
+    "img": "https://cdn-contents.weverseshop.io/public/shop/7c93b080594ba4423073dc8dceef66ce.png?w=400&auto=format&fit=crop&q=80",
+    "category": "MEMBERSHIP",
+    "productUrl": "https://shop.weverse.io/ko/shop/KRW/artists/7/sales/66305/"
+  },
+  {
+    "id": "g4",
+    "name": "PHOTOCARD SET",
+    "price": 15000,
+    "img": "https://cdn-contents.weverseshop.io/public/shop/a8ee9dc214b1d1e0fb177c62eb5005c0.png?w=400&auto=format&fit=crop&q=80",
+    "category": "COLLECTION",
+    "productUrl": "https://shop.weverse.io/ko/shop/KRW/artists/7/sales/66066/"
+  },
+  {
+    "id": "g5",
+    "name": "5th Album 'HAPPY BURSTDAY' (Set)",
+    "price": 64500,
+    "img": "https://cdn-contents.weverseshop.io/public/shop/e27e0a18de36499a7ad0136a4a7cca58.png?w=400&auto=format&fit=crop&q=80",
+    "category": "ALBUM",
+    "productUrl": "https://shop.weverse.io/ko/shop/KRW/artists/7/sales/39493/"
+  }
+]

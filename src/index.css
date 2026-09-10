@@ -108,7 +108,7 @@ div:has(> .quick-menu-grid) {
    히어로 슬라이더 독립 너비 컨테이너
    ========================================================================= */
 .hero-slider-item {
-  height: 520px !important; /* 높이를 520px로 확장하여 상하 잘림 대폭 완화 */
+  height: 520px !important; 
   position: relative;
   background-color: #0b0c10;
 }
@@ -121,7 +121,7 @@ div:has(> .quick-menu-grid) {
   position: relative;
   background-repeat: no-repeat;
   
-  /* 🔥 핵심: center 대신 top right로 설정하여 머리/얼굴을 상단에 고정 */
+  /* center 대신 top right로 설정하여 머리/얼굴을 상단에 고정 */
   background-position: top right !important; 
   background-size: cover !important; 
 }

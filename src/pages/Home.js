@@ -1,4 +1,8 @@
+// 1. React & Hooks
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+
+// 2. UI Components (React Bootstrap)
 import {
   Container,
   Row,
@@ -9,89 +13,153 @@ import {
   Spinner,
   Modal,
 } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
-// src/pages/Home.js 상단
+
+// 3. Icons (Font Awesome)
 import {
-  FaBroadcastTower,
-  FaCommentDots,
-  FaCalendarAlt,
-  FaPlayCircle,
-  FaMagic,
-  FaCrown,
-  FaTicketAlt,
-  FaCompactDisc,
-  FaLightbulb,
   FaArrowRight,
-  FaLock,
-  FaQuoteLeft,
-  FaFire,
-  FaExternalLinkAlt,
-  FaSyncAlt,
+  FaBroadcastTower,
+  FaCalendarAlt,
   FaChevronLeft,
   FaChevronRight,
+  FaCommentDots,
+  FaCompactDisc,
+  FaCrown,
+  FaExternalLinkAlt,
+  FaFire,
   FaHeart,
+  FaLightbulb,
+  FaLock,
+  FaMagic,
+  FaPlayCircle,
+  FaQuoteLeft,
+  FaShoppingCart,
+  FaSyncAlt,
+  FaTicketAlt,
 } from "react-icons/fa";
+
+// 4. Local Data (JSON)
 import artistsData from "../data/artists.json";
-import fallbackCurationData from "../data/seventeen_curation.json";
-import bestAlbums from "../data/best_albums.json";
 import sliderItems from "../data/slider_items.json";
+import bestAlbums from "../data/best_albums.json";
+import fallbackCurationData from "../data/seventeen_curation.json";
+import goodsCatalog from "../data/goods_catalog.json";
+
+
+
 
 export default function Home() {
   // 1. 퀵메뉴 버튼 상태 옵션
   const [showReadyModal, setShowReadyModal] = useState(false);
   const [selectedMenuName, setSelectedMenuName] = useState("");
-
   const navigate = useNavigate();
 
   // 2. POPULAR STAR 중앙 슬라이더 상태
   const [activeStarIdx, setActiveStarIdx] = useState(0);
-
   const handlePrevStar = () => {
     setActiveStarIdx((prev) =>
       prev === 0 ? artistsData.length - 1 : prev - 1,
     );
   };
-
   const handleNextStar = () => {
     setActiveStarIdx((prev) =>
       prev === artistsData.length - 1 ? 0 : prev + 1,
     );
   };
 
-  // 2. n8n Git 연동 데이터 상태
+  // 3. n8n 실시간 AI 큐레이션 연동 상태
   const [curationItems, setCurationItems] = useState(fallbackCurationData);
   const [isLoading, setIsLoading] = useState(false);
   const [lastSyncTime, setLastSyncTime] = useState(
     "2026-09-04 16:30 (자동 동기화됨)",
   );
 
-  const GITHUB_RAW_JSON_URL = "";
+  // 💡 n8n Webhook 주소 (테스트 중: webhook-test / 완성 후 활성화 시: webhook)
+  const N8N_WEBHOOK_URL = "https://jmlee91.app.n8n.cloud/webhook/curation";
 
-  const fetchLatestGitData = async () => {
-    if (!GITHUB_RAW_JSON_URL) return;
+  const fetchN8nCurationData = async (artistName = "세븐틴") => {
+    if (!N8N_WEBHOOK_URL) return;
+
+    // 💡 이벤트 객체(e)가 잘못 들어오는 경우 "세븐틴"으로 강제 지정
+    const targetArtist = typeof artistName === "string" ? artistName : "세븐틴";
+
     try {
       setIsLoading(true);
-      const res = await fetch(GITHUB_RAW_JSON_URL + `?t=${Date.now()}`);
+      const res = await fetch(
+        `${N8N_WEBHOOK_URL}?artist=${encodeURIComponent(targetArtist)}`,
+      );
+
       if (res.ok) {
         const data = await res.json();
-        setCurationItems(data);
+        const rawList = data.recommendedGoods || data || [];
+
+        const formattedItems = rawList.map((aiItem, idx) => {
+          // 1. goods_catalog.json 매칭 (id 일치 확인, 없으면 순서 매칭)
+          const catalogItem =
+            (typeof goodsCatalog !== "undefined" &&
+              goodsCatalog.find((g) => g.id === aiItem.id)) ||
+            (typeof goodsCatalog !== "undefined" && goodsCatalog[idx]) ||
+            {};
+
+          const name = catalogItem.name || aiItem.name || "공식 굿즈";
+          const price = catalogItem.price
+            ? Number(catalogItem.price).toLocaleString()
+            : "49,000";
+          const image =
+            catalogItem.img ||
+            catalogItem.image ||
+            aiItem.img ||
+            "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&auto=format&fit=crop&q=80";
+          const link =
+            catalogItem.productUrl || aiItem.link || "https://weverseshop.io/";
+
+          return {
+            ...aiItem, // 💡 AI 원본 데이터 유지
+            id: catalogItem.id || aiItem.id || `g-${idx + 1}`,
+            headline:
+              aiItem.headline ||
+              data.headline ||
+              "실시간 활동 기반 맞춤 큐레이션",
+            category_badge:
+              aiItem.category_badge || data.contextKeyword || "AI REALTIME",
+            source: "n8n Gemini 분석",
+            reason: aiItem.reason || aiItem.quote || "최신 활동 맞춤 아이템",
+            quote: aiItem.reason || aiItem.quote || "최신 활동 맞춤 아이템",
+
+            // 💡 하단 박스와 구매 버튼이 참조하는 product 객체
+            product: {
+              id: catalogItem.id || aiItem.id,
+              name: name,
+              title: name,
+              price: price,
+              formattedPrice: `₩${price}`,
+              img: image,
+              image: image,
+              thumbnail: image,
+              link: link,
+              tag: catalogItem.category || "MD PICK",
+            },
+          };
+        });
+
+        setCurationItems(formattedItems);
         setLastSyncTime(new Date().toLocaleTimeString());
       }
     } catch (err) {
-      console.warn("Git 데이터 페치 실패, 기본 데이터를 유지합니다.", err);
+      console.warn("n8n 실시간 연동 실패, 기본 캐싱 데이터를 유지합니다.", err);
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchLatestGitData();
+    // 컴포넌트 마운트 시 기본 아티스트(세븐틴)로 큐레이션 호출
+    fetchN8nCurationData("세븐틴");
   }, []);
 
-  // 2. 팬 소통 커뮤니티 퀵 메뉴 목록 (6개)
+  // 4. 팬 소통 커뮤니티 퀵 메뉴 목록 (6개)
   const quickMenus = [
     {
-      icon: <FaBroadcastTower size={22} className="text-danger" />,
+      icon: <FaBroadcastTower size={23} className="text-danger" />,
       label: "LIVE 방송",
       link: "#",
     },
@@ -118,11 +186,11 @@ export default function Home() {
     {
       icon: <FaCrown size={22} style={{ color: "#eab308" }} />,
       label: "멤버십 전용",
-      link: "/login", // 🔥 로그인 서브페이지로 연결
+      link: "/login",
     },
   ];
 
-// 3. 중간 자동 슬라이딩 프로모션 배너 데이터
+  // 5. 미니 자동 슬라이딩 프로모션 배너 데이터
   const promoBanners = [
     {
       id: 1,
@@ -156,17 +224,10 @@ export default function Home() {
     },
   ];
 
-
-
-
-
-
-
-
   return (
     <div className="pb-5">
       {/* =========================================================================
-          1. HERO SLIDER (독립 너비 컨테이너: CSS의 max-width로 단독 제어)
+          1. HERO SLIDER (독립 너비 컨테이너)
           ========================================================================= */}
       <section className="hero-slider-container pt-3 mb-5">
         <div className="hero-slider-wrapper shadow-lg">
@@ -180,7 +241,7 @@ export default function Home() {
                   <div className="hero-slide-overlay" />
                   <div className="hero-slide-text px-4 px-md-5">
                     <Badge className="badge-ai px-3 py-1 mb-3 rounded-pill">
-                      AI Context Highlight
+                      NEW RELEASE
                     </Badge>
                     <h1 className="fw-bold text-white display-6 mb-2">
                       {slide.title}
@@ -190,9 +251,10 @@ export default function Home() {
                     <Button
                       variant="primary"
                       className="px-4 py-2 rounded-pill fw-semibold shadow"
-                      onClick={() => navigate(`/artist/${slide.artistId}`)}
+                      onClick={() => window.open(`/artist/${slide.artistId}`)}
                     >
-                      큐레이션 피드 보기 <FaArrowRight className="ms-2" />
+                      Unfold the Story
+                      <FaArrowRight className="ms-2" />
                     </Button>
                   </div>
                 </div>
@@ -367,11 +429,7 @@ export default function Home() {
           </div>
         </section>
 
-
-
-
-
-{/* -----------------------------------------------------------------------
+        {/* -----------------------------------------------------------------------
             3.5. MID PROMO BANNER (자동 슬라이딩 중간 프로모션 띠배너)
             ----------------------------------------------------------------------- */}
         <div className="my-5">
@@ -398,13 +456,23 @@ export default function Home() {
                 >
                   <div className="d-flex flex-column gap-1">
                     <div className="d-flex align-items-center gap-2">
-                      <Badge bg={promo.badgeColor} className="px-2.5 py-1 text-uppercase fw-bold" style={{ fontSize: "0.7rem" }}>
+                      <Badge
+                        bg={promo.badgeColor}
+                        className="px-2.5 py-1 text-uppercase fw-bold"
+                        style={{ fontSize: "0.7rem" }}
+                      >
                         {promo.badge}
                       </Badge>
-                      <span className="text-secondary small font-monospace">ContextVerse Notice</span>
+                      <span className="text-secondary small font-monospace">
+                        ContextVerse Notice
+                      </span>
                     </div>
-                    <h5 className="fw-bold text-white mb-0 mt-1">{promo.title}</h5>
-                    <p className="text-light text-opacity-75 small mb-0">{promo.desc}</p>
+                    <h5 className="fw-bold text-white mb-0 mt-1">
+                      {promo.title}
+                    </h5>
+                    <p className="text-light text-opacity-75 small mb-0">
+                      {promo.desc}
+                    </p>
                   </div>
 
                   <div className="flex-shrink-0">
@@ -421,11 +489,6 @@ export default function Home() {
             ))}
           </Carousel>
         </div>
-
-
-
-
-
 
         {/* -----------------------------------------------------------------------
             4. SECTION 2: BEST ALBUM (위버스샵 4x2 커머스 그리드)
@@ -473,7 +536,7 @@ export default function Home() {
                     className="collage-banner-img"
                   />
 
-{/* 하단 위버스샵 상품 정보 영역 */}
+                  {/* 하단 위버스샵 상품 정보 영역 */}
                   <div className="album-shop-body mt-2 pt-2">
                     <div
                       className="album-shop-title text-light fw-medium text-truncate mb-1"
@@ -483,7 +546,10 @@ export default function Home() {
                     </div>
 
                     <div className="d-flex align-items-baseline gap-1">
-                      <span className="text-secondary" style={{ fontSize: "0.72rem" }}>
+                      <span
+                        className="text-secondary"
+                        style={{ fontSize: "0.72rem" }}
+                      >
                         KRW
                       </span>
                       <span className="fw-bold text-white fs-6">
@@ -491,7 +557,10 @@ export default function Home() {
                       </span>
                     </div>
 
-                    <div className="text-secondary mb-2" style={{ fontSize: "0.7rem" }}>
+                    <div
+                      className="text-secondary mb-2"
+                      style={{ fontSize: "0.7rem" }}
+                    >
                       세금포함
                     </div>
 
@@ -517,7 +586,7 @@ export default function Home() {
         </section>
 
         {/* -----------------------------------------------------------------------
-            5. SECTION 3: AI 추천 굿즈 (n8n Git Pipeline 연동)
+            5. SECTION 3: AI 추천 굿즈 (n8n  연동)
             ----------------------------------------------------------------------- */}
         <section id="ai-curation" className="mb-5 pt-4">
           <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-end mb-4 gap-2">
@@ -540,17 +609,10 @@ export default function Home() {
                 variant="outline-secondary"
                 size="sm"
                 className="rounded-circle p-2 text-info border-secondary"
-                onClick={fetchLatestGitData}
-                title="Git 최신 데이터 새로고침"
+                onClick={() => fetchN8nCurationData("세븐틴")}
+                title="데이터 새로고침"
               >
                 <FaSyncAlt size={12} className={isLoading ? "fa-spin" : ""} />
-              </Button>
-              <Button
-                variant="link"
-                className="text-primary text-decoration-none small p-0"
-                onClick={() => navigate("/artist/seventeen")}
-              >
-                전체 맥락 보기 &gt;
               </Button>
             </div>
           </div>
@@ -564,73 +626,129 @@ export default function Home() {
             </div>
           ) : (
             <Row xs={1} md={2} className="g-4">
-              {curationItems.map((item) => (
-                <Col key={item.id}>
-                  <div className="glow-card p-4 h-100 d-flex flex-column justify-content-between">
-                    <div>
-                      <div className="d-flex justify-content-between align-items-center mb-2">
-                        <Badge className="badge-ai px-2.5 py-1">
-                          {item.category_badge}
-                        </Badge>
-                        <small className="text-secondary">{item.source}</small>
-                      </div>
+              {curationItems.map((item, idx) => {
+                // 데이터 안전 추출 (product 객체 우선, 없으면 겉표면 데이터 매핑)
+                const targetProduct = item.product || item;
+                const productName =
+                  targetProduct.name || targetProduct.title || "세븐틴 공식 MD";
+                const productImg =
+                  targetProduct.img ||
+                  targetProduct.image ||
+                  targetProduct.imageUrl ||
+                  "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&auto=format&fit=crop&q=80";
+                const productPrice = targetProduct.price
+                  ? targetProduct.price
+                      .toString()
+                      .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                  : "49,000";
+                const productTag = targetProduct.tag || "MD PICK";
+                const productLink =
+                  targetProduct.link ||
+                  targetProduct.productUrl ||
+                  "https://weverseshop.io/";
+                const quoteText =
+                  item.quote ||
+                  item.reason ||
+                  "팬덤 트렌드 및 최신 활동 맞춤 아이템";
+                const headlineText =
+                  item.headline || "실시간 활동 기반 맞춤 큐레이션";
 
-                      <h5 className="fw-bold text-white mt-3 mb-3">
-                        {item.headline}
-                      </h5>
-
-                      <div className="p-3 bg-black rounded border border-secondary mb-3 d-flex gap-2">
-                        <FaQuoteLeft className="text-info fs-5 flex-shrink-0 mt-1" />
-                        <p className="mb-0 text-light small fst-italic">
-                          "{item.quote}"
-                        </p>
-                      </div>
-
-                      <div className="p-3 bg-black rounded border border-secondary d-flex align-items-center gap-3">
-                        <img
-                          src={item.product?.img}
-                          alt={item.product?.name}
-                          className="rounded"
-                          style={{
-                            width: "70px",
-                            height: "70px",
-                            objectFit: "cover",
-                          }}
-                        />
-                        <div className="flex-grow-1">
-                          <Badge bg="secondary" className="small mb-1">
-                            {item.product?.tag}
+                return (
+                  <Col key={item.id || idx}>
+                    <div className="glow-card p-4 h-100 d-flex flex-column justify-content-between">
+                      <div>
+                        {/* 상단 뱃지 & 출처 */}
+                        <div className="d-flex justify-content-between align-items-center mb-2">
+                          <Badge className="badge-ai px-2.5 py-1">
+                            {item.category_badge || "AI REALTIME"}
                           </Badge>
-                          <h6 className="fw-bold text-white mb-1">
-                            {item.product?.name}
-                          </h6>
-                          <p className="text-secondary small mb-0">
-                            {item.product?.reason}
+                          <small className="text-secondary">
+                            {item.source || "n8n Gemini 분석"}
+                          </small>
+                        </div>
+
+                        {/* 헤드라인 */}
+                        <h5 className="fw-bold text-white mt-3 mb-3">
+                          {headlineText}
+                        </h5>
+
+                        {/* 상단: AI 추천 이유 따옴표 박스 */}
+                        <div className="p-3 bg-black rounded border border-secondary mb-3 d-flex gap-2">
+                          <FaQuoteLeft className="text-info fs-5 flex-shrink-0 mt-1" />
+                          <p className="mb-0 text-light small fst-italic">
+                            "{quoteText}"
                           </p>
                         </div>
+
+                        {/* 하단: 상품 정보 박스 (클릭 시 구매 페이지 이동) */}
+                        <div
+                          className="p-3 bg-black rounded border border-secondary d-flex align-items-center gap-3"
+                          style={{
+                            cursor: "pointer",
+                            transition: "border-color 0.2s",
+                          }}
+                          onClick={() => window.open(productLink, "_blank")}
+                          title="클릭 시 구매 페이지로 이동"
+                        >
+                          <img
+                            src={productImg}
+                            alt={productName}
+                            className="rounded"
+                            style={{
+                              width: "70px",
+                              height: "70px",
+                              objectFit: "cover",
+                              backgroundColor: "#1a1a1a",
+                            }}
+                            onError={(e) => {
+                              e.target.src =
+                                "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&auto=format&fit=crop&q=80";
+                            }}
+                          />
+                          <div className="flex-grow-1 overflow-hidden">
+                            <div className="d-flex justify-content-between align-items-center mb-1">
+                              <Badge bg="secondary" className="small">
+                                {productTag}
+                              </Badge>
+                              <span className="text-info fw-bold small">
+                                ₩{productPrice}
+                              </span>
+                            </div>
+                            <h6 className="fw-bold text-white mb-1 text-truncate">
+                              {productName}
+                            </h6>
+                            <p
+                              className="text-secondary small mb-0 text-truncate"
+                              style={{ fontSize: "0.8rem" }}
+                            >
+                              클릭 시 공식 구매처로 연결됩니다
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* 카드 하단 푸터 버튼 */}
+                      <div className="pt-3 mt-3 border-top border-secondary d-flex justify-content-between align-items-center">
+                        <span
+                          className="text-secondary small"
+                          style={{ fontSize: "0.75rem" }}
+                        >
+                          ● n8n Git Commit 연동 완료
+                        </span>
+                        <Button
+                          href={productLink}
+                          target="_blank"
+                          variant="outline-info"
+                          size="sm"
+                          className="rounded-pill d-flex align-items-center gap-1"
+                        >
+                          위버스샵 구매 <FaExternalLinkAlt size={11} />
+                        </Button>
                       </div>
                     </div>
-
-                    <div className="pt-3 mt-3 border-top border-secondary d-flex justify-content-between align-items-center">
-                      <span
-                        className="text-secondary small"
-                        style={{ fontSize: "0.75rem" }}
-                      >
-                        ● n8n Git Commit 연동 완료
-                      </span>
-                      <Button
-                        href={item.product?.link}
-                        target="_blank"
-                        variant="outline-info"
-                        size="sm"
-                        className="rounded-pill d-flex align-items-center gap-1"
-                      >
-                        위버스샵 구매 <FaExternalLinkAlt size={11} />
-                      </Button>
-                    </div>
-                  </div>
-                </Col>
-              ))}
+                  </Col>
+                );
+              })}
             </Row>
           )}
         </section>
