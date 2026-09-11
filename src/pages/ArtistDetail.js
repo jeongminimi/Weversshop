@@ -1,6 +1,11 @@
+// 1. React & Hooks
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+
+// 2. UI Components (React Bootstrap)
 import { Container, Badge, Button, Modal } from "react-bootstrap";
+
+// 3. Icons (Font Awesome)
 import {
   FaArrowLeft,
   FaChevronLeft,
@@ -8,29 +13,47 @@ import {
   FaRobot,
   FaMagic,
 } from "react-icons/fa";
+
+// 4. Local Data
 import membersData from "../data/members.json";
 import artistsData from "../data/artists.json";
+
+// 💡 로컬 및 GitHub Pages 배포 환경 경로를 자동 보정하는 헬퍼 함수
+const getAssetPath = (path) => {
+  if (!path) return "";
+  if (
+    path.startsWith("http://") ||
+    path.startsWith("https://") ||
+    path.startsWith("data:")
+  ) {
+    return path;
+  }
+  const cleanPath = path.replace(/^\.?\//, "");
+  return `${process.env.PUBLIC_URL}/${cleanPath}`;
+};
 
 export default function ArtistDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  // 1. 아티스트 및 멤버 목록 로드
+  // 1. 아티스트 및 멤버 데이터 매칭
   const artistInfo = artistsData.find(
     (a) => a.id.toLowerCase() === id?.toLowerCase(),
   );
   const memberList = membersData[id] || membersData["seventeen"] || [];
 
-  // 🔥 [핵심 1] 첫 번째 멤버(Index 0)부터 시작
+  // 2. 인덱스 및 모달 상태
   const [activeIdx, setActiveIdx] = useState(0);
   const [showPromptModal, setShowPromptModal] = useState(false);
 
-  // 🔥 [핵심 2] 무한 순환 이전 / 다음 핸들러 (Circular Navigation)
+  // 3. 무한 순환 네비게이션 핸들러 (방어 코드 포함)
   const handlePrev = () => {
+    if (!memberList.length) return;
     setActiveIdx((prev) => (prev === 0 ? memberList.length - 1 : prev - 1));
   };
 
   const handleNext = () => {
+    if (!memberList.length) return;
     setActiveIdx((prev) => (prev === memberList.length - 1 ? 0 : prev + 1));
   };
 
@@ -73,15 +96,12 @@ export default function ArtistDetail() {
             {artistInfo?.name || "SEVENTEEN"}
           </h1>
           <p className="text-secondary small mt-1">
-            좌우 버튼을 눌러 원하는 맴버의 소식을 확인해 보세요.
+            좌우 버튼을 눌러 원하는 멤버의 소식을 확인해 보세요.
           </p>
         </div>
 
-        {/* =========================================================================
-            🔥 3D 무한 순환 서큘러 트랙 (Popular this week 순환 로직 적용)
-            ========================================================================= */}
+        {/* 3D 서큘러 트랙 슬라이더 */}
         <div className="artist-circular-wrapper position-relative my-4">
-          {/* 좌우 이동 버튼 */}
           <button
             onClick={handlePrev}
             className="slider-nav-btn prev-btn"
@@ -99,10 +119,8 @@ export default function ArtistDetail() {
             <FaChevronRight size={18} />
           </button>
 
-          {/* 원형 트랙 컨테이너 */}
           <div className="artist-circular-stage">
             {memberList.map((member, idx) => {
-              // 메인의 offset 순환 공식 적용
               let offset = idx - activeIdx;
               const total = memberList.length;
               if (offset > total / 2) offset -= total;
@@ -110,7 +128,6 @@ export default function ArtistDetail() {
 
               const isCenter = offset === 0;
 
-              // 중앙 카드(폭 520px)와 양옆 알약 카드(폭 110px) 간의 동적 X좌표 계산
               let translateX = 0;
               if (offset === 0) {
                 translateX = 0;
@@ -120,8 +137,8 @@ export default function ArtistDetail() {
                 translateX = -340 + (offset + 1) * 135;
               }
 
-              // 중앙 기준 좌우 3개까지만 화면에 노출 (성능 및 시각적 정돈)
               const isVisible = Math.abs(offset) <= 3;
+              const memberBg = getAssetPath(member.image);
 
               return (
                 <div
@@ -141,17 +158,19 @@ export default function ArtistDetail() {
                         ? 1
                         : 0.55 - Math.abs(offset) * 0.1,
                     pointerEvents: isVisible ? "auto" : "none",
-                    backgroundImage: `linear-gradient(to top, rgba(10, 11, 16, 0.95) 12%, rgba(10, 11, 16, 0.25) 60%, transparent 100%), url(${member.image})`,
+                    backgroundImage: `linear-gradient(to top, rgba(10, 11, 16, 0.95) 12%, rgba(10, 11, 16, 0.25) 60%, transparent 100%), url(${memberBg})`,
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
                   }}
                 >
-                  {/* 양옆 비활성화 상태: 세로 텍스트 라벨 (레퍼런스 이미지 스타일) */}
+                  {/* 양옆 비활성화: 세로 라벨 */}
                   {!isCenter && (
                     <div className="side-pill-label">
                       <span className="text-white fw-bold">{member.name}</span>
                     </div>
                   )}
 
-                  {/* 중앙 활성화 상태: 대형 와이드 카드 상세 정보 */}
+                  {/* 중앙 카드 상세 정보 */}
                   {isCenter && (
                     <div className="center-card-content p-4 p-md-5">
                       <div className="d-flex align-items-center gap-2 mb-2">
@@ -173,7 +192,6 @@ export default function ArtistDetail() {
                         {member.desc}
                       </p>
 
-                      {/* AI 프롬프트 창 오픈 버튼 */}
                       <Button
                         variant="primary"
                         size="sm"
@@ -195,7 +213,7 @@ export default function ArtistDetail() {
           </div>
         </div>
 
-        {/* 하단 멤버 인디케이터 (13개 점) */}
+        {/* 하단 인디케이터 바 */}
         <div className="d-flex justify-content-center align-items-center gap-2 mt-5">
           {memberList.map((_, idx) => (
             <div
@@ -215,9 +233,7 @@ export default function ArtistDetail() {
         </div>
       </Container>
 
-      {/* =========================================================================
-          🔥 AI 프롬프트 창 (서비스 준비 중 팝업 모달)
-          ========================================================================= */}
+      {/* AI 프롬프트 모달 */}
       <Modal
         show={showPromptModal}
         onHide={() => setShowPromptModal(false)}
@@ -246,7 +262,7 @@ export default function ArtistDetail() {
           </div>
 
           <h4 className="fw-bold text-white mb-2">
-            [{currentMember.name}] AI 프롬프트 엔진
+            [{currentMember.name || "아티스트"}] AI 프롬프트 엔진
           </h4>
           <Badge bg="secondary" className="mb-3 px-3 py-1">
             Prompt Tuning in Progress
@@ -256,9 +272,9 @@ export default function ArtistDetail() {
             className="text-secondary small mb-4"
             style={{ lineHeight: "1.7" }}
           >
-            현재 <strong>{currentMember.name}</strong> 님의 고유 어투와 영상
-            인터뷰 데이터를 학습한 n8n AI 에이전트 파이프라인을 구축하고
-            있습니다.
+            현재 <strong>{currentMember.name || "멤버"}</strong> 님의 고유
+            어투와 영상 인터뷰 데이터를 학습한 n8n AI 에이전트 파이프라인을
+            구축하고 있습니다.
             <br />
             실시간 질의응답 및 페르소나 대화 서비스는 곧 제공될 예정입니다!
           </p>

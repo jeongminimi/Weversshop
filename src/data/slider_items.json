@@ -1,10 +1,10 @@
 [
   {
     "id": 1,
-    "title": "SEVENTEEN WORLD TOUR [NEW_]IN SEOUL",
+    "title": "SEVENTEEN WORLD TOUR [NEW_] IN SEOUL",
     "subtitle": "AI가 알려주는 공연 당일 필수템부터 콘서트 100% 즐기는 법!",
     "desc": "상암 월드컵경기장 월드투어 콘서트 실시간 VOD로 만나보세요.",
-    "image": "/img/svt_slider.jpg",
+    "image": "./img/svt_slider.jpg",
     "artistId": "seventeen"
   },
   {
@@ -12,7 +12,7 @@
     "title": "TOMORROW X TOGETHER",
     "subtitle": "New Album 'Chapter2 : Stigma'",
     "desc": "올 가을 돌아온 TXT의 새로운 앨범 미리 만나보세요.",
-    "image": "/img/TXT.jpg",
+    "image": "./img/TXT.jpg",
     "artistId": "txt"
   },
   {
@@ -20,7 +20,7 @@
     "title": "BONGBONGEE JAPAN ORIGINAL Merch",
     "subtitle": "일본 공식굿즈 봉봉이 갸루버전",
     "desc": "지금 위버스샵에서 예약 판매 중!",
-    "image": "/img/goods.webp",
+    "image": "./img/goods.webp",
     "artistId": "seventeen"
   }
 ]

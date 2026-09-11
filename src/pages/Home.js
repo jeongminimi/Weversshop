@@ -1,5 +1,5 @@
-// 1. React & Hooks
-import React, { useState, useEffect } from "react";
+// 1. React & Core Hooks
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 
 // 2. UI Components (React Bootstrap)
@@ -11,7 +11,6 @@ import {
   Badge,
   Button,
   Spinner,
-  Modal,
 } from "react-bootstrap";
 
 // 3. Icons (Font Awesome)
@@ -22,19 +21,15 @@ import {
   FaChevronLeft,
   FaChevronRight,
   FaCommentDots,
-  FaCompactDisc,
   FaCrown,
   FaExternalLinkAlt,
   FaFire,
   FaHeart,
-  FaLightbulb,
   FaLock,
   FaMagic,
   FaPlayCircle,
   FaQuoteLeft,
-  FaShoppingCart,
   FaSyncAlt,
-  FaTicketAlt,
 } from "react-icons/fa";
 
 // 4. Local Data (JSON)
@@ -44,119 +39,141 @@ import bestAlbums from "../data/best_albums.json";
 import fallbackCurationData from "../data/seventeen_curation.json";
 import goodsCatalog from "../data/goods_catalog.json";
 
-
-
+// 💡 배포 경로(/Weversshop)와 로컬 경로를 자동 판별해 이미지 404를 방지하는 헬퍼 함수
+const getAssetPath = (path) => {
+  if (!path) return "";
+  if (
+    path.startsWith("http://") ||
+    path.startsWith("https://") ||
+    path.startsWith("data:")
+  ) {
+    return path; // 외부 웹 이미지는 그대로 반환
+  }
+  const cleanPath = path.replace(/^\.?\//, ""); // './' 또는 '/' 제거
+  return `${process.env.PUBLIC_URL}/${cleanPath}`;
+};
 
 export default function Home() {
-  // 1. 퀵메뉴 버튼 상태 옵션
-  const [showReadyModal, setShowReadyModal] = useState(false);
-  const [selectedMenuName, setSelectedMenuName] = useState("");
   const navigate = useNavigate();
 
-  // 2. POPULAR STAR 중앙 슬라이더 상태
+  // ==========================================
+  // [State] 1. 아티스트 중앙 슬라이더 상태
+  // ==========================================
   const [activeStarIdx, setActiveStarIdx] = useState(0);
+
   const handlePrevStar = () => {
     setActiveStarIdx((prev) =>
       prev === 0 ? artistsData.length - 1 : prev - 1,
     );
   };
+
   const handleNextStar = () => {
     setActiveStarIdx((prev) =>
       prev === artistsData.length - 1 ? 0 : prev + 1,
     );
   };
 
-  // 3. n8n 실시간 AI 큐레이션 연동 상태
+  // ==========================================
+  // [State] 2. n8n 실시간 AI 큐레이션 연동 상태
+  // ==========================================
   const [curationItems, setCurationItems] = useState(fallbackCurationData);
   const [isLoading, setIsLoading] = useState(false);
-  const [lastSyncTime, setLastSyncTime] = useState(
-    "2026-09-04 16:30 (자동 동기화됨)",
-  );
+  const [lastSyncTime, setLastSyncTime] = useState("최근 동기화 완료");
 
-  // 💡 n8n Webhook 주소 (테스트 중: webhook-test / 완성 후 활성화 시: webhook)
+  // n8n 상시 가동 엔드포인트 URL
   const N8N_WEBHOOK_URL = "https://jmlee91.app.n8n.cloud/webhook/curation";
 
-  const fetchN8nCurationData = async (artistName = "세븐틴") => {
-    if (!N8N_WEBHOOK_URL) return;
+  // n8n 데이터 비동기 호출 함수
+  const fetchN8nCurationData = useCallback(
+    async (artistName = "세븐틴") => {
+      if (!N8N_WEBHOOK_URL) return;
 
-    // 💡 이벤트 객체(e)가 잘못 들어오는 경우 "세븐틴"으로 강제 지정
-    const targetArtist = typeof artistName === "string" ? artistName : "세븐틴";
+      const targetArtist =
+        typeof artistName === "string" ? artistName : "세븐틴";
 
-    try {
-      setIsLoading(true);
-      const res = await fetch(
-        `${N8N_WEBHOOK_URL}?artist=${encodeURIComponent(targetArtist)}`,
-      );
+      try {
+        setIsLoading(true);
+        const res = await fetch(
+          `${N8N_WEBHOOK_URL}?artist=${encodeURIComponent(targetArtist)}`,
+        );
 
-      if (res.ok) {
-        const data = await res.json();
-        const rawList = data.recommendedGoods || data || [];
+        if (res.ok) {
+          const data = await res.json();
+          const rawList = data.recommendedGoods || data || [];
 
-        const formattedItems = rawList.map((aiItem, idx) => {
-          // 1. goods_catalog.json 매칭 (id 일치 확인, 없으면 순서 매칭)
-          const catalogItem =
-            (typeof goodsCatalog !== "undefined" &&
-              goodsCatalog.find((g) => g.id === aiItem.id)) ||
-            (typeof goodsCatalog !== "undefined" && goodsCatalog[idx]) ||
-            {};
+          // AI 생성 데이터와 goods_catalog.json 마스터 데이터 클라이언트 조인
+          const formattedItems = rawList.map((aiItem, idx) => {
+            const catalogItem =
+              (typeof goodsCatalog !== "undefined" &&
+                goodsCatalog.find((g) => g.id === aiItem.id)) ||
+              (typeof goodsCatalog !== "undefined" && goodsCatalog[idx]) ||
+              {};
 
-          const name = catalogItem.name || aiItem.name || "공식 굿즈";
-          const price = catalogItem.price
-            ? Number(catalogItem.price).toLocaleString()
-            : "49,000";
-          const image =
-            catalogItem.img ||
-            catalogItem.image ||
-            aiItem.img ||
-            "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&auto=format&fit=crop&q=80";
-          const link =
-            catalogItem.productUrl || aiItem.link || "https://weverseshop.io/";
+            const name = catalogItem.name || aiItem.name || "세븐틴 공식 MD";
+            const price = catalogItem.price
+              ? Number(catalogItem.price).toLocaleString()
+              : "49,000";
+            const image =
+              catalogItem.img ||
+              catalogItem.image ||
+              aiItem.img ||
+              "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&auto=format&fit=crop&q=80";
+            const link =
+              catalogItem.productUrl ||
+              aiItem.link ||
+              "https://weverseshop.io/";
 
-          return {
-            ...aiItem, // 💡 AI 원본 데이터 유지
-            id: catalogItem.id || aiItem.id || `g-${idx + 1}`,
-            headline:
-              aiItem.headline ||
-              data.headline ||
-              "실시간 활동 기반 맞춤 큐레이션",
-            category_badge:
-              aiItem.category_badge || data.contextKeyword || "AI REALTIME",
-            source: "n8n Gemini 분석",
-            reason: aiItem.reason || aiItem.quote || "최신 활동 맞춤 아이템",
-            quote: aiItem.reason || aiItem.quote || "최신 활동 맞춤 아이템",
+            return {
+              ...aiItem,
+              id: catalogItem.id || aiItem.id || `g-${idx + 1}`,
+              headline:
+                aiItem.headline ||
+                data.headline ||
+                "실시간 활동 기반 맞춤 큐레이션",
+              category_badge:
+                aiItem.category_badge || data.contextKeyword || "AI REALTIME",
+              source: "n8n Gemini 분석",
+              reason: aiItem.reason || aiItem.quote || "최신 활동 맞춤 아이템",
+              quote: aiItem.reason || aiItem.quote || "최신 활동 맞춤 아이템",
+              product: {
+                id: catalogItem.id || aiItem.id,
+                name: name,
+                title: name,
+                price: price,
+                formattedPrice: `₩${price}`,
+                img: image,
+                image: image,
+                thumbnail: image,
+                link: link,
+                tag: catalogItem.category || "MD PICK",
+              },
+            };
+          });
 
-            // 💡 하단 박스와 구매 버튼이 참조하는 product 객체
-            product: {
-              id: catalogItem.id || aiItem.id,
-              name: name,
-              title: name,
-              price: price,
-              formattedPrice: `₩${price}`,
-              img: image,
-              image: image,
-              thumbnail: image,
-              link: link,
-              tag: catalogItem.category || "MD PICK",
-            },
-          };
-        });
-
-        setCurationItems(formattedItems);
-        setLastSyncTime(new Date().toLocaleTimeString());
+          setCurationItems(formattedItems);
+          setLastSyncTime(new Date().toLocaleTimeString());
+        } else {
+          console.warn(`n8n 서버 응답 오류: 상태 코드 ${res.status}`);
+        }
+      } catch (err) {
+        console.warn(
+          "n8n 실시간 연동 실패, 기본 캐싱 데이터를 유지합니다.",
+          err,
+        );
+      } finally {
+        setIsLoading(false);
       }
-    } catch (err) {
-      console.warn("n8n 실시간 연동 실패, 기본 캐싱 데이터를 유지합니다.", err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    },
+    [N8N_WEBHOOK_URL],
+  );
 
   useEffect(() => {
-    // 컴포넌트 마운트 시 기본 아티스트(세븐틴)로 큐레이션 호출
     fetchN8nCurationData("세븐틴");
-  }, []);
+  }, [fetchN8nCurationData]);
 
-  // 4. 팬 소통 커뮤니티 퀵 메뉴 목록 (6개)
+  // ==========================================
+  // [Static] 3. 팬 소통 퀵 메뉴 (6종)
+  // ==========================================
   const quickMenus = [
     {
       icon: <FaBroadcastTower size={23} className="text-danger" />,
@@ -190,7 +207,9 @@ export default function Home() {
     },
   ];
 
-  // 5. 미니 자동 슬라이딩 프로모션 배너 데이터
+  // ==========================================
+  // [Static] 4. 자동 슬라이딩 프로모션 배너
+  // ==========================================
   const promoBanners = [
     {
       id: 1,
@@ -226,9 +245,7 @@ export default function Home() {
 
   return (
     <div className="pb-5">
-      {/* =========================================================================
-          1. HERO SLIDER (독립 너비 컨테이너)
-          ========================================================================= */}
+      {/* 1. HERO SLIDER */}
       <section className="hero-slider-container pt-3 mb-5">
         <div className="hero-slider-wrapper shadow-lg">
           <Carousel interval={4500}>
@@ -236,7 +253,9 @@ export default function Home() {
               <Carousel.Item key={slide.id} className="hero-slider-item">
                 <div
                   className="hero-slide-content"
-                  style={{ backgroundImage: `url(${slide.image})` }}
+                  style={{
+                    backgroundImage: `url(${getAssetPath(slide.image)})`,
+                  }}
                 >
                   <div className="hero-slide-overlay" />
                   <div className="hero-slide-text px-4 px-md-5">
@@ -251,7 +270,7 @@ export default function Home() {
                     <Button
                       variant="primary"
                       className="px-4 py-2 rounded-pill fw-semibold shadow"
-                      onClick={() => window.open(`/artist/${slide.artistId}`)}
+                      onClick={() => navigate(`/artist/${slide.artistId}`)}
                     >
                       Unfold the Story
                       <FaArrowRight className="ms-2" />
@@ -264,13 +283,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* =========================================================================
-          MAIN CONTENTS (기본 규격 컨테이너: 퀵메뉴, 인기스타, 앨범샵, AI큐레이션)
-          ========================================================================= */}
       <Container>
-        {/* -----------------------------------------------------------------------
-            2. QUICK ICONS (팬 커뮤니티 6대 퀵 메뉴)
-            ----------------------------------------------------------------------- */}
+        {/* 2. QUICK ICONS */}
         <div className="mb-5 py-2">
           <div className="quick-menu-grid">
             {quickMenus.map((item, idx) => (
@@ -280,14 +294,11 @@ export default function Home() {
                 style={{ cursor: "pointer" }}
                 onClick={() => {
                   if (item.label === "AI 큐레이션") {
-                    // 1. AI 큐레이션: 해당 섹션으로 부드럽게 스크롤
                     const target = document.querySelector(item.link);
                     if (target) target.scrollIntoView({ behavior: "smooth" });
                   } else if (item.label === "멤버십 전용") {
-                    // 2. 멤버십 전용: 로그인 서브페이지(/login)로 이동
                     navigate(item.link);
                   } else {
-                    // 3. LIVE, 아티스트 피드, 공식 스케줄, 미디어 콘텐츠: 준비 중 경고창
                     alert(`[${item.label}] 현재 서비스 준비 중입니다.`);
                   }
                 }}
@@ -299,9 +310,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* -----------------------------------------------------------------------
-            3. SECTION 1: POPULAR STAR (3D 인터랙티브 카드 슬라이더)
-            ----------------------------------------------------------------------- */}
+        {/* 3. SECTION 1: POPULAR STAR */}
         <section id="popular-star" className="mb-5 pt-4 position-relative">
           <div className="text-center mb-5">
             <span
@@ -371,7 +380,7 @@ export default function Home() {
                   >
                     <div className="star-card-image-wrap">
                       <img
-                        src={artist.image}
+                        src={getAssetPath(artist.image)}
                         alt={artist.name}
                         className="star-card-img"
                       />
@@ -429,9 +438,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* -----------------------------------------------------------------------
-            3.5. MID PROMO BANNER (자동 슬라이딩 중간 프로모션 띠배너)
-            ----------------------------------------------------------------------- */}
+        {/* 4. MID PROMO BANNER */}
         <div className="my-5">
           <Carousel
             interval={3500}
@@ -490,9 +497,7 @@ export default function Home() {
           </Carousel>
         </div>
 
-        {/* -----------------------------------------------------------------------
-            4. SECTION 2: BEST ALBUM (위버스샵 4x2 커머스 그리드)
-            ----------------------------------------------------------------------- */}
+        {/* 5. SECTION 2: BEST ALBUM */}
         <section id="best-album" className="mb-5 pt-4">
           <div className="text-center mb-5">
             <span
@@ -517,26 +522,23 @@ export default function Home() {
                   onClick={() => navigate(`/album/${album.id}`)}
                   title="클릭하여 상세 페이지로 이동"
                 >
-                  {/* 상단 3분할 썸네일 */}
                   <div className="collage-thumbs">
                     {album.thumbs.map((thumb, idx) => (
                       <img
                         key={idx}
-                        src={thumb}
+                        src={getAssetPath(thumb)}
                         alt={`${album.title} preview ${idx + 1}`}
                         className="collage-thumb-img"
                       />
                     ))}
                   </div>
 
-                  {/* 하단 단일 와이드 배너 */}
                   <img
-                    src={album.banner}
+                    src={getAssetPath(album.banner)}
                     alt={`${album.title} banner`}
                     className="collage-banner-img"
                   />
 
-                  {/* 하단 위버스샵 상품 정보 영역 */}
                   <div className="album-shop-body mt-2 pt-2">
                     <div
                       className="album-shop-title text-light fw-medium text-truncate mb-1"
@@ -585,9 +587,7 @@ export default function Home() {
           </Row>
         </section>
 
-        {/* -----------------------------------------------------------------------
-            5. SECTION 3: AI 추천 굿즈 (n8n  연동)
-            ----------------------------------------------------------------------- */}
+        {/* 6. SECTION 3: AI 추천 굿즈 */}
         <section id="ai-curation" className="mb-5 pt-4">
           <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-end mb-4 gap-2">
             <div>
@@ -627,7 +627,6 @@ export default function Home() {
           ) : (
             <Row xs={1} md={2} className="g-4">
               {curationItems.map((item, idx) => {
-                // 데이터 안전 추출 (product 객체 우선, 없으면 겉표면 데이터 매핑)
                 const targetProduct = item.product || item;
                 const productName =
                   targetProduct.name || targetProduct.title || "세븐틴 공식 MD";
@@ -672,7 +671,7 @@ export default function Home() {
                           {headlineText}
                         </h5>
 
-                        {/* 상단: AI 추천 이유 따옴표 박스 */}
+                        {/* 상단: AI 추천 이유 인용구 박스 */}
                         <div className="p-3 bg-black rounded border border-secondary mb-3 d-flex gap-2">
                           <FaQuoteLeft className="text-info fs-5 flex-shrink-0 mt-1" />
                           <p className="mb-0 text-light small fst-italic">
@@ -680,7 +679,7 @@ export default function Home() {
                           </p>
                         </div>
 
-                        {/* 하단: 상품 정보 박스 (클릭 시 구매 페이지 이동) */}
+                        {/* 하단: 상품 정보 박스 */}
                         <div
                           className="p-3 bg-black rounded border border-secondary d-flex align-items-center gap-3"
                           style={{
@@ -688,10 +687,10 @@ export default function Home() {
                             transition: "border-color 0.2s",
                           }}
                           onClick={() => window.open(productLink, "_blank")}
-                          title="클릭 시 구매 페이지로 이동"
+                          title="클릭 시 공식 구매 페이지로 이동"
                         >
                           <img
-                            src={productImg}
+                            src={getAssetPath(productImg)}
                             alt={productName}
                             className="rounded"
                             style={{
@@ -727,7 +726,7 @@ export default function Home() {
                         </div>
                       </div>
 
-                      {/* 카드 하단 푸터 버튼 */}
+                      {/* 하단 푸터 버튼 */}
                       <div className="pt-3 mt-3 border-top border-secondary d-flex justify-content-between align-items-center">
                         <span
                           className="text-secondary small"
@@ -754,9 +753,7 @@ export default function Home() {
         </section>
       </Container>
 
-      {/* =========================================================================
-          6. FOOTER
-          ========================================================================= */}
+      {/* 7. FOOTER */}
       <footer
         className="mt-5 py-4 border-top border-secondary"
         style={{ backgroundColor: "#090a0e" }}

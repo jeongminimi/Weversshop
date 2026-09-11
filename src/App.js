@@ -9,7 +9,7 @@ import Cart from "./pages/Cart";
 
 function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={process.env.PUBLIC_URL}>
       <div
         className="min-h-screen bg-black text-light"
         style={{ minHeight: "100vh", backgroundColor: "#121212" }}

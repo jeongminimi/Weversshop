@@ -1,6 +1,11 @@
+// 1. React & Hooks
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Container, Row, Col, Badge, Button, Card } from "react-bootstrap";
+
+// 2. UI Components (React Bootstrap)
+import { Container, Row, Col, Badge, Button } from "react-bootstrap";
+
+// 3. Icons (Font Awesome)
 import {
   FaArrowLeft,
   FaShoppingCart,
@@ -8,26 +13,43 @@ import {
   FaTruck,
   FaShieldAlt,
 } from "react-icons/fa";
+
+// 4. Local Data
 import bestAlbums from "../data/best_albums.json";
+
+// 💡 로컬과 GitHub Pages 배포 환경의 서브 디렉터리 경로를 자동 보정하는 헬퍼 함수
+const getAssetPath = (path) => {
+  if (!path) return "";
+  if (
+    path.startsWith("http://") ||
+    path.startsWith("https://") ||
+    path.startsWith("data:")
+  ) {
+    return path;
+  }
+  const cleanPath = path.replace(/^\.?\//, "");
+  return `${process.env.PUBLIC_URL}/${cleanPath}`;
+};
 
 export default function AlbumDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  // 1. URL의 id에 맞는 앨범 데이터 탐색
+  // 1. URL 파라미터(id)에 일치하는 앨범 데이터 조회
   const album = bestAlbums.find((item) => String(item.id) === String(id));
 
-  // 2. 뷰어 상태 및 수량 상태
+  // 2. 메인 뷰어 이미지 및 구매 수량 상태 관리
   const [selectedImg, setSelectedImg] = useState(album ? album.banner : "");
   const [quantity, setQuantity] = useState(1);
 
+  // 3. 앨범 데이터 부재 시 예외 처리 뷰
   if (!album) {
     return (
       <Container className="py-5 text-center text-white">
-        <h3>존재하지 않는 앨범 상품입니다.</h3>
+        <h3 className="fw-bold mb-3">존재하지 않는 앨범 상품입니다.</h3>
         <Button
           variant="primary"
-          className="mt-3 rounded-pill"
+          className="rounded-pill px-4"
           onClick={() => navigate("/")}
         >
           메인으로 이동
@@ -36,11 +58,11 @@ export default function AlbumDetail() {
     );
   }
 
-  // 가격 숫자 변환 (콤마 제거)
+  // 가격 숫자 변환 및 총 결제 금액 계산
   const numericPrice = parseInt(String(album.price).replace(/,/g, ""), 10) || 0;
   const totalPrice = (numericPrice * quantity).toLocaleString();
 
-  // 장바구니 데이터 저장 헬퍼
+  // 장바구니 로컬스토리지 저장 함수
   const saveToCart = () => {
     const existingCart = JSON.parse(
       localStorage.getItem("contextverse_cart") || "[]",
@@ -66,7 +88,7 @@ export default function AlbumDetail() {
     localStorage.setItem("contextverse_cart", JSON.stringify(existingCart));
   };
 
-  // 장바구니 담기 클릭
+  // 장바구니 담기 핸들러
   const handleAddToCart = () => {
     saveToCart();
     if (
@@ -78,7 +100,7 @@ export default function AlbumDetail() {
     }
   };
 
-  // 바로 구매하기 클릭 (장바구니로 즉시 연결)
+  // 즉시 구매 핸들러
   const handleBuyNow = () => {
     saveToCart();
     navigate("/cart");
@@ -90,7 +112,7 @@ export default function AlbumDetail() {
       style={{ minHeight: "85vh", backgroundColor: "#0b0c10" }}
     >
       <Container style={{ maxWidth: "1080px" }}>
-        {/* 뒤로가기 네비게이션 */}
+        {/* 네비게이션 뒤로가기 버튼 */}
         <Button
           variant="link"
           className="text-secondary text-decoration-none p-0 mb-4 d-flex align-items-center gap-2"
@@ -100,7 +122,7 @@ export default function AlbumDetail() {
         </Button>
 
         <Row className="g-5">
-          {/* 좌측: 앨범 이미지 갤러리 */}
+          {/* 좌측: 앨범 이미지 뷰어 & 썸네일 갤러리 */}
           <Col lg={6}>
             <div
               className="p-3 rounded-4 shadow-lg mb-3"
@@ -111,7 +133,7 @@ export default function AlbumDetail() {
               }}
             >
               <img
-                src={selectedImg || album.banner}
+                src={getAssetPath(selectedImg || album.banner)}
                 alt={album.title}
                 className="img-fluid rounded-3"
                 style={{
@@ -120,10 +142,14 @@ export default function AlbumDetail() {
                   objectFit: "contain",
                   backgroundColor: "#fff",
                 }}
+                onError={(e) => {
+                  e.target.src =
+                    "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&auto=format&fit=crop&q=80";
+                }}
               />
             </div>
 
-            {/* 썸네일 리스트 (클릭 시 큰 이미지 변경) */}
+            {/* 하단 썸네일 목록 */}
             <div className="d-flex gap-2 justify-content-center">
               {[album.banner, ...(album.thumbs || [])].map((imgUrl, idx) => (
                 <div
@@ -143,12 +169,16 @@ export default function AlbumDetail() {
                   }}
                 >
                   <img
-                    src={imgUrl}
-                    alt="thumb"
+                    src={getAssetPath(imgUrl)}
+                    alt={`${album.title} preview ${idx + 1}`}
                     style={{
                       width: "100%",
                       height: "100%",
                       objectFit: "cover",
+                    }}
+                    onError={(e) => {
+                      e.target.src =
+                        "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&auto=format&fit=crop&q=80";
                     }}
                   />
                 </div>
@@ -156,7 +186,7 @@ export default function AlbumDetail() {
             </div>
           </Col>
 
-          {/* 우측: 상품 정보 및 구매 옵션 */}
+          {/* 우측: 상품 상세 정보 및 구매 제어 */}
           <Col lg={6}>
             <div className="d-flex align-items-center gap-2 mb-2">
               {album.badges?.map((badge, idx) => (
@@ -183,7 +213,7 @@ export default function AlbumDetail() {
               <span className="text-secondary small">(세금 포함)</span>
             </div>
 
-            {/* 배송 및 혜택 안내 */}
+            {/* 배송 및 혜택 메타데이터 박스 */}
             <div
               className="p-3 rounded-3 mb-4"
               style={{
@@ -201,7 +231,7 @@ export default function AlbumDetail() {
               </div>
             </div>
 
-            {/* 수량 선택 박스 */}
+            {/* 주문 수량 제어 컨트롤러 */}
             <div
               className="d-flex justify-content-between align-items-center mb-4 p-3 rounded-3"
               style={{
@@ -233,13 +263,13 @@ export default function AlbumDetail() {
               </div>
             </div>
 
-            {/* 총 결제 금액 */}
+            {/* 총 상품 금액 */}
             <div className="d-flex justify-content-between align-items-center mb-4 pt-2">
               <span className="text-secondary">총 상품 금액</span>
               <span className="fw-bold text-info fs-4">₩{totalPrice}</span>
             </div>
 
-            {/* 액션 버튼 2종 */}
+            {/* 장바구니 & 바로구매 액션 버튼 */}
             <div className="d-flex gap-3">
               <Button
                 variant="outline-light"
