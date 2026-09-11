@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/Weversshop/static/css/main.aab9023a.css",
-    "main.js": "/Weversshop/static/js/main.d5be3764.js",
-    "static/js/453.95029687.chunk.js": "/Weversshop/static/js/453.95029687.chunk.js",
-    "index.html": "/Weversshop/index.html",
-    "main.aab9023a.css.map": "/Weversshop/static/css/main.aab9023a.css.map",
-    "main.d5be3764.js.map": "/Weversshop/static/js/main.d5be3764.js.map",
-    "453.95029687.chunk.js.map": "/Weversshop/static/js/453.95029687.chunk.js.map"
+    "main.css": "/Weversshop0911/static/css/main.aab9023a.css",
+    "main.js": "/Weversshop0911/static/js/main.5d54c30f.js",
+    "static/js/453.95029687.chunk.js": "/Weversshop0911/static/js/453.95029687.chunk.js",
+    "index.html": "/Weversshop0911/index.html",
+    "main.aab9023a.css.map": "/Weversshop0911/static/css/main.aab9023a.css.map",
+    "main.5d54c30f.js.map": "/Weversshop0911/static/js/main.5d54c30f.js.map",
+    "453.95029687.chunk.js.map": "/Weversshop0911/static/js/453.95029687.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.aab9023a.css",
-    "static/js/main.d5be3764.js"
+    "static/js/main.5d54c30f.js"
   ]
 }
