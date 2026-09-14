@@ -594,10 +594,10 @@ export default function Home() {
               <div className="d-flex align-items-center gap-2 mb-1">
                 <FaFire className="text-danger" />
                 <span className="text-primary text-uppercase fw-bold small">
-                  Context-Driven Automated MD
+                  Merch smart-picked just for you
                 </span>
               </div>
-              <h2 className="fw-bold text-white mb-0">AI 추천 굿즈</h2>
+              <h2 className="fw-bold text-white mb-0">Algorithm's Choice</h2>
             </div>
 
             <div className="d-flex align-items-center gap-3">

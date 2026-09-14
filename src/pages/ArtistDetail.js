@@ -1,5 +1,5 @@
 // 1. React & Hooks
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
 // 2. UI Components (React Bootstrap)
@@ -46,7 +46,11 @@ export default function ArtistDetail() {
   const [activeIdx, setActiveIdx] = useState(0);
   const [showPromptModal, setShowPromptModal] = useState(false);
 
-  // 3. 무한 순환 네비게이션 핸들러 (방어 코드 포함)
+  // 3. n8n 실시간 멤버 뉴스 상태
+  const [memberNews, setMemberNews] = useState(null);
+  const [isNewsLoading, setIsNewsLoading] = useState(false);
+
+  // 4. 무한 순환 네비게이션 핸들러 (방어 코드 포함)
   const handlePrev = () => {
     if (!memberList.length) return;
     setActiveIdx((prev) => (prev === 0 ? memberList.length - 1 : prev - 1));
@@ -58,6 +62,30 @@ export default function ArtistDetail() {
   };
 
   const currentMember = memberList[activeIdx] || {};
+
+  // 5. 모달 오픈 시 n8n 호출
+  useEffect(() => {
+    if (showPromptModal && currentMember?.name) {
+      setIsNewsLoading(true);
+      setMemberNews(null);
+
+      fetch(
+        `https://jmlee91.app.n8n.cloud/webhook/member-news?member=${encodeURIComponent(
+          currentMember.name,
+        )}&_t=${Date.now()}`,
+      )
+        .then((res) => res.json())
+        .then((data) => {
+          setMemberNews(data);
+        })
+        .catch((err) => {
+          console.error("멤버 소식 조회 실패:", err);
+        })
+        .finally(() => {
+          setIsNewsLoading(false);
+        });
+    }
+  }, [showPromptModal, currentMember]);
 
   return (
     <div
@@ -268,16 +296,58 @@ export default function ArtistDetail() {
             Prompt Tuning in Progress
           </Badge>
 
-          <p
-            className="text-secondary small mb-4"
-            style={{ lineHeight: "1.7" }}
-          >
-            현재 <strong>{currentMember.name || "멤버"}</strong> 님의 고유
-            어투와 영상 인터뷰 데이터를 학습한 n8n AI 에이전트 파이프라인을
-            구축하고 있습니다.
-            <br />
-            실시간 질의응답 및 페르소나 대화 서비스는 곧 제공될 예정입니다!
-          </p>
+          {/* n8n 실시간 AI 브리핑 영역 */}
+          <div className="my-3 text-start">
+            {isNewsLoading ? (
+              <div className="text-center py-4">
+                <div
+                  className="spinner-border text-primary spinner-border-sm mb-2"
+                  role="status"
+                />
+                <p className="text-secondary small mb-0">
+                  <strong>{currentMember.name || "멤버"}</strong> 님의 최신 활동
+                  뉴스를 수집하고 AI로 분석 중입니다...
+                </p>
+              </div>
+            ) : memberNews && memberNews.headline ? (
+              <div className="bg-light p-3 rounded-3 border">
+                <div className="d-flex align-items-center gap-2 mb-2">
+                  <span className="badge bg-primary px-2 py-1">
+                    {memberNews.activity_tag || "최근 활동"}
+                  </span>
+                  <small className="text-muted">실시간 뉴스 브리핑</small>
+                </div>
+
+                <h6
+                  className="fw-bold text-dark mb-2"
+                  style={{ lineHeight: "1.4" }}
+                >
+                  {memberNews.headline}
+                </h6>
+
+                <p
+                  className="text-secondary small mb-3"
+                  style={{ lineHeight: "1.6" }}
+                >
+                  {memberNews.summary}
+                </p>
+
+                {memberNews.fan_cheer && (
+                  <div className="p-2 rounded bg-white border-start border-primary border-3 small text-muted fst-italic">
+                    "{memberNews.fan_cheer}"
+                  </div>
+                )}
+              </div>
+            ) : (
+              <p
+                className="text-secondary small mb-4"
+                style={{ lineHeight: "1.7" }}
+              >
+                최신 활동 뉴스를 불러오지 못했습니다. 잠시 후 다시 시도해
+                주세요.
+              </p>
+            )}
+          </div>
 
           <Button
             variant="primary"
