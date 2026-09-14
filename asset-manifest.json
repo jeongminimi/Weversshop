@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "/Weversshop/static/css/main.aab9023a.css",
-    "main.js": "/Weversshop/static/js/main.d5be3764.js",
+    "main.js": "/Weversshop/static/js/main.c2cbd1cb.js",
     "static/js/453.95029687.chunk.js": "/Weversshop/static/js/453.95029687.chunk.js",
     "index.html": "/Weversshop/index.html",
     "main.aab9023a.css.map": "/Weversshop/static/css/main.aab9023a.css.map",
-    "main.d5be3764.js.map": "/Weversshop/static/js/main.d5be3764.js.map",
+    "main.c2cbd1cb.js.map": "/Weversshop/static/js/main.c2cbd1cb.js.map",
     "453.95029687.chunk.js.map": "/Weversshop/static/js/453.95029687.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.aab9023a.css",
-    "static/js/main.d5be3764.js"
+    "static/js/main.c2cbd1cb.js"
   ]
 }
