@@ -158,6 +158,9 @@ export default function ArtistDetail() {
 
           <div className="artist-circular-stage">
             {memberList.map((member, idx) => {
+
+              // 💡 [포인트 1] 무한 순환을 위한 3D offset 계산 로직
+              // 외부 라이브러리 없이 순수 수학 연산으로 양방향 인덱스를 구함
               let offset = idx - activeIdx;
               const total = memberList.length;
               if (offset > total / 2) offset -= total;
@@ -184,6 +187,7 @@ export default function ArtistDetail() {
                   className={`artist-rotating-card ${
                     isCenter ? "card-center-active" : "card-side-pill"
                   }`}
+                  // 💡 [포인트 2] 계산된 offset 값을 실시간으로 주입하는 동적 style 바인딩
                   style={{
                     transform: `translateX(${translateX}px) scale(${
                       isCenter ? 1 : 0.88 - Math.abs(offset) * 0.04

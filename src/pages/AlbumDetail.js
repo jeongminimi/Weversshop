@@ -17,7 +17,7 @@ import {
 // 4. Local Data
 import bestAlbums from "../data/best_albums.json";
 
-// 💡 로컬과 GitHub Pages 배포 환경의 서브 디렉터리 경로를 자동 보정하는 헬퍼 함수
+// 💡 동적 라우팅(/album/:id) 환경에서 이미지의 상대 경로가 꼬여 엑스박스(404)가 뜨는 것을 방지
 const getAssetPath = (path) => {
   if (!path) return "";
   if (
