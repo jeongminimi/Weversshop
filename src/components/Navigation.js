@@ -7,7 +7,7 @@ import {
   InputGroup,
   Button,
 } from "react-bootstrap";
-import { Link, useNavigate } from "react-router-dom"; // 🔥 중복 import 정리
+import { Link, useNavigate } from "react-router-dom";
 import { FaMagic, FaSearch, FaBell, FaUserCircle } from "react-icons/fa";
 
 export default function Navigation() {
@@ -64,12 +64,12 @@ export default function Navigation() {
           <div className="d-flex align-items-center gap-3 ms-auto mt-2 mt-lg-0">
             {/* 서치블록 (Search Input) */}
             <InputGroup style={{ width: "220px" }}>
-              <InputGroup.Text className="bg-black border-secondary text-secondary ps-2.5 pe-2">
+              <InputGroup.Text className="bg-transparent border-secondary text-secondary ps-2.5 pe-2">
                 <FaSearch size={13} />
               </InputGroup.Text>
               <Form.Control
                 placeholder="아티스트, 굿즈 검색"
-                className="bg-black text-light border-secondary small"
+                className="bg-transparent border-secondary small shadow-none search-input-custom"
                 style={{ fontSize: "0.82rem" }}
               />
             </InputGroup>
@@ -81,9 +81,7 @@ export default function Navigation() {
                 className="p-1 text-secondary hover-white position-relative"
                 onClick={() => {
                   setHasNewAlert(false);
-                  alert(
-                    "[n8n 알림 피드]\n세븐틴 실시간 투어 일정과 연계된 신규 MD 추천이 도착했습니다!",
-                  );
+                  alert("[알림 피드]\n아티스트의 새로운 소식이 도착했습니다!");
                 }}
                 title="새 알림"
               >
