@@ -12,6 +12,7 @@ import {
   FaChevronRight,
   FaRobot,
   FaMagic,
+  FaCogs,
 } from "react-icons/fa";
 
 // 4. Local Data
@@ -68,11 +69,10 @@ export default function ArtistDetail() {
     if (showPromptModal && currentMember?.name) {
       setIsNewsLoading(true);
       setMemberNews(null);
+      const targetArtist = artistInfo?.name || "세븐틴";
 
       fetch(
-        `https://jmlee91.app.n8n.cloud/webhook/member-news?member=${encodeURIComponent(
-          currentMember.name,
-        )}&_t=${Date.now()}`,
+        `https://jmlee91.app.n8n.cloud/webhook/member-news?artist=${encodeURIComponent(targetArtist)}&member=${encodeURIComponent(currentMember.name)}&_t=${Date.now()}`,
       )
         .then((res) => res.json())
         .then((data) => {
@@ -261,7 +261,7 @@ export default function ArtistDetail() {
         </div>
       </Container>
 
-      {/* AI 프롬프트 모달 */}
+      {/* 1. 실시간 멤버 뉴스 브리핑 모달 */}
       <Modal
         show={showPromptModal}
         onHide={() => setShowPromptModal(false)}

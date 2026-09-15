@@ -1,7 +1,6 @@
 // 1. React & Core Hooks
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-
 // 2. UI Components (React Bootstrap)
 import {
   Container,
@@ -55,7 +54,7 @@ const getAssetPath = (path) => {
 
 export default function Home() {
   const navigate = useNavigate();
-
+  const [showPipelineModal, setShowPipelineModal] = useState(false); //PipelineModal
   // ==========================================
   // [State] 1. 아티스트 중앙 슬라이더 상태
   // ==========================================
@@ -267,10 +266,15 @@ export default function Home() {
                     </h1>
                     <h5 className="text-info mb-3">{slide.subtitle}</h5>
                     <p className="text-secondary small mb-4">{slide.desc}</p>
+                    {/*setShowPipelineModal(true)로 교체 */}
                     <Button
                       variant="primary"
                       className="px-4 py-2 rounded-pill fw-semibold shadow"
-                      onClick={() => navigate(`/artist/${slide.artistId}`)}
+                      onClick={() =>
+                        alert(
+                          `[${slide.title}]\n현재 스토리 뷰 서비스 준비 중입니다. 곧 찾아뵙겠습니다.`,
+                        )
+                      }
                     >
                       Unfold the Story
                       <FaArrowRight className="ms-2" />
@@ -725,7 +729,6 @@ export default function Home() {
                           </div>
                         </div>
                       </div>
-
                       {/* 하단 푸터 버튼 */}
                       <div className="pt-3 mt-3 border-top border-secondary d-flex justify-content-between align-items-center">
                         <span
@@ -752,7 +755,6 @@ export default function Home() {
           )}
         </section>
       </Container>
-
       {/* 7. FOOTER */}
       <footer
         className="mt-5 py-4 border-top border-secondary"
