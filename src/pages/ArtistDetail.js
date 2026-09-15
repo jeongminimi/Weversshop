@@ -12,7 +12,6 @@ import {
   FaChevronRight,
   FaRobot,
   FaMagic,
-  FaCogs,
 } from "react-icons/fa";
 
 // 4. Local Data
@@ -70,22 +69,32 @@ export default function ArtistDetail() {
       setIsNewsLoading(true);
       setMemberNews(null);
       const targetArtist = artistInfo?.name || "세븐틴";
+      const controller = new AbortController();
 
       fetch(
         `https://jmlee91.app.n8n.cloud/webhook/member-news?artist=${encodeURIComponent(targetArtist)}&member=${encodeURIComponent(currentMember.name)}&_t=${Date.now()}`,
       )
-        .then((res) => res.json())
+        .then((res) => {
+          // 💡 HTTP 에러 처리 추가 (404, 500 등)
+          if (!res.ok) throw new Error("서버 응답이 올바르지 않습니다.");
+          return res.json();
+        })
         .then((data) => {
           setMemberNews(data);
         })
         .catch((err) => {
-          console.error("멤버 소식 조회 실패:", err);
+          if (err.name === "AbortError") {
+            console.log("요청이 취소되었습니다.");
+          } else {
+            console.error("멤버 소식 조회 실패:", err);
+          }
         })
         .finally(() => {
           setIsNewsLoading(false);
         });
+      return () => controller.abort();
     }
-  }, [showPromptModal, currentMember]);
+  }, [showPromptModal, currentMember, artistInfo?.name]);
 
   return (
     <div
