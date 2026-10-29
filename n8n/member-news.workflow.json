@@ -1,0 +1,410 @@
+{
+  "id": "MemberNewsBrief1",
+  "name": "Weversshop - Member News Briefing",
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "nodes": [
+    {
+      "parameters": {
+        "path": "member-news",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "b2d0e7a3-0000-4000-8000-000000000004",
+      "name": "Receive Member Request",
+      "webhookId": "b2d0e7a3-2c2f-4e66-8a7f-1d2b0000wh01"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 아티스트/멤버 이름으로 Google News 검색 주소와 캐시 키(오늘 날짜)를 만든다.\nconst q = $json.query || {};\n// \"세븐틴 (SEVENTEEN)\" → \"세븐틴\"\nconst artist = String(q.artist || '세븐틴').replace(/\\s*\\(.*?\\)\\s*/g, '').trim().slice(0, 30);\nconst member = String(q.member || '').trim().slice(0, 30);\n// 캐시 만료 기준일 (한국 시간)\nconst date = new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10);\n\nconst keyword = member ? `${artist} ${member}` : artist;\nconst rssUrl = 'https://news.google.com/rss/search?q='\n  + encodeURIComponent(`${keyword} when:30d`)\n  + '&hl=ko&gl=KR&ceid=KR:ko';\n\nreturn [{ json: { date, artist, member, keyword, rssUrl } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ],
+      "id": "b2d0e7a3-0000-4000-8000-000000000005",
+      "name": "Build News Query"
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "member_news_cache"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "date",
+              "condition": "eq",
+              "keyValue": "={{ $json.date }}"
+            },
+            {
+              "keyName": "artist",
+              "condition": "eq",
+              "keyValue": "={{ $json.artist }}"
+            },
+            {
+              "keyName": "member",
+              "condition": "eq",
+              "keyValue": "={{ $json.member }}"
+            }
+          ]
+        },
+        "limit": 1
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        440,
+        0
+      ],
+      "id": "b2d0e7a3-0000-4000-8000-000000000006",
+      "name": "Get Cached Briefing",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b2d0e7a3-if-0001",
+              "leftValue": "={{ $json.news_data }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        660,
+        0
+      ],
+      "id": "b2d0e7a3-0000-4000-8000-000000000007",
+      "name": "Cache Hit?"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 캐시에 저장된 브리핑 JSON 문자열을 응답 형식으로 복원한다.\nlet briefing = {};\ntry {\n  briefing = JSON.parse($json.news_data || '{}');\n} catch (e) {\n  briefing = {};\n}\nreturn [{ json: { ...briefing, cached: true } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        -160
+      ],
+      "id": "b2d0e7a3-0000-4000-8000-000000000008",
+      "name": "Restore Cached Briefing"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1100,
+        -160
+      ],
+      "id": "b2d0e7a3-0000-4000-8000-000000000009",
+      "name": "Respond (Cache Hit)"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Build News Query').first().json.rssUrl }}",
+        "options": {
+          "timeout": 10000,
+          "response": {
+            "response": {
+              "responseFormat": "text",
+              "outputPropertyName": "data"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        880,
+        120
+      ],
+      "id": "b2d0e7a3-0000-4000-8000-000000000010",
+      "name": "Search Latest News",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Google News RSS(XML)에서 최신 기사 목록을 뽑고 Gemini 요약 프롬프트를 만든다.\nconst ctx = $('Build News Query').first().json;\nconst xml = typeof $json.data === 'string' ? $json.data : '';\n\nconst decode = s => s\n  .replace(/<!\\[CDATA\\[([\\s\\S]*?)\\]\\]>/g, '$1')\n  .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '\"')\n  .replace(/&#39;/g, \"'\").replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&')\n  .trim();\nconst pick = (block, tag) => {\n  const m = block.match(new RegExp(`<${tag}[^>]*>([\\\\s\\\\S]*?)</${tag}>`));\n  return m ? decode(m[1]) : '';\n};\n\nconst seen = new Set();\nlet articles = [];\nfor (const m of xml.matchAll(/<item>([\\s\\S]*?)<\\/item>/g)) {\n  const block = m[1];\n  const source = pick(block, 'source');\n  let title = pick(block, 'title');\n  // \"제목 - 언론사\" 형식에서 언론사 꼬리 제거\n  if (source && title.endsWith(` - ${source}`)) title = title.slice(0, -(source.length + 3));\n  if (!title || seen.has(title)) continue;\n  seen.add(title);\n  const date = new Date(pick(block, 'pubDate'));\n  articles.push({\n    title,\n    link: pick(block, 'link'),\n    source,\n    pubDate: isNaN(date) ? '' : date.toISOString().slice(0, 10),\n  });\n}\n// Google News는 관련도 순이므로 최신순으로 다시 정렬\narticles = articles.sort((a, b) => b.pubDate.localeCompare(a.pubDate)).slice(0, 8);\n\nconst prompt = `너는 K-POP 팬 앱의 뉴스 브리핑 에디터다.\n아래는 \"${ctx.keyword}\" 관련 최근 30일 기사 제목 목록이다. 기사 본문은 없고 제목만 있다.\n\n${articles.map((a, i) => `${i + 1}. [${a.pubDate}] ${a.title} (${a.source})`).join('\\n')}\n\n[규칙]\n1. 반드시 위 기사 제목에 나온 사실만 사용한다. 제목에 없는 일정, 수치, 발언을 지어내지 않는다.\n2. ${ctx.member || ctx.artist}와 직접 관련 없는 기사는 무시한다.\n3. headline: 최근 활동을 대표하는 한 줄 (40자 이내)\n4. summary: 최근 활동 흐름을 2~3문장으로 요약\n5. activity_tag: 활동 성격 짧은 태그 (예: 컴백, 화보, 예능, 공연, 근황)\n6. fan_cheer: 팬이 보낼 법한 짧은 응원 한마디\n7. 아래 JSON만 출력한다.\n\n{\"activity_tag\":\"\",\"headline\":\"\",\"summary\":\"\",\"fan_cheer\":\"\"}`;\n\nreturn [{ json: { ...ctx, articles, prompt } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        120
+      ],
+      "id": "b2d0e7a3-0000-4000-8000-000000000011",
+      "name": "Parse Articles"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googlePalmApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ contents: [{ role: 'user', parts: [{ text: $json.prompt }] }], generationConfig: { responseMimeType: 'application/json', temperature: 0.4, thinkingConfig: { thinkingLevel: 'low' } } }) }}",
+        "options": {
+          "timeout": 25000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1320,
+        120
+      ],
+      "id": "b2d0e7a3-0000-4000-8000-000000000012",
+      "name": "Summarize (Gemini)",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "EIRwxsybDFKRoDV5",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 2000,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Gemini 요약을 검증하고 근거 기사 링크를 붙인다.\n// 기사가 없으면 headline을 비워 프론트가 기본 프로필 브리핑을 보여주게 한다.\nconst ctx = $('Parse Articles').first().json;\nconst articles = ctx.articles || [];\n\nlet parsed = null;\ntry {\n  const parts = ($json.candidates && $json.candidates[0] && $json.candidates[0].content\n    && $json.candidates[0].content.parts) || [];\n  parsed = JSON.parse(parts.map(p => p.text || '').join('').replace(/```json|```/g, '').trim());\n} catch (e) {\n  parsed = null;\n}\n\nconst clip = (v, n) => String(v || '').trim().slice(0, n);\nlet briefing;\nif (articles.length === 0) {\n  briefing = { activity_tag: '', headline: '', summary: '', fan_cheer: '', source: 'no-articles' };\n} else if (parsed && parsed.headline && parsed.summary) {\n  briefing = {\n    activity_tag: clip(parsed.activity_tag, 12) || '최근 활동',\n    headline: clip(parsed.headline, 60),\n    summary: clip(parsed.summary, 300),\n    fan_cheer: clip(parsed.fan_cheer, 80),\n    source: 'n8n Gemini 분석',\n  };\n} else {\n  // AI 실패 시 기사 제목으로 직접 구성\n  briefing = {\n    activity_tag: '최신 기사',\n    headline: clip(articles[0].title, 60),\n    summary: articles.slice(1, 3).map(a => a.title).join(' / ') || clip(articles[0].title, 300),\n    fan_cheer: '',\n    source: 'n8n 기사 헤드라인',\n  };\n}\n\nreturn [{\n  json: {\n    ...briefing,\n    member: ctx.member,\n    articles: articles.slice(0, 3),\n    searchedAt: new Date().toISOString(),\n    cached: false,\n  },\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1540,
+        120
+      ],
+      "id": "b2d0e7a3-0000-4000-8000-000000000013",
+      "name": "Validate Briefing"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1760,
+        120
+      ],
+      "id": "b2d0e7a3-0000-4000-8000-000000000014",
+      "name": "Respond (Fresh)"
+    },
+    {
+      "parameters": {
+        "jsCode": "// AI 요약이 성공한 결과만 캐시에 적재한다.\n// 실패 결과를 저장하면 그날 하루 동안 대체 화면이 고정되므로 제외.\nif ($json.source !== 'n8n Gemini 분석') return [];\n\nconst ctx = $('Build News Query').first().json;\nconst { cached, ...briefing } = $json;\nreturn [{\n  json: {\n    date: ctx.date,\n    artist: ctx.artist,\n    member: ctx.member,\n    news_data: JSON.stringify(briefing),\n  },\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1980,
+        120
+      ],
+      "id": "b2d0e7a3-0000-4000-8000-000000000015",
+      "name": "Prepare Cache Row"
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "insert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "member_news_cache"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        2200,
+        120
+      ],
+      "id": "b2d0e7a3-0000-4000-8000-000000000016",
+      "name": "Insert Cache Row"
+    }
+  ],
+  "connections": {
+    "Receive Member Request": {
+      "main": [
+        [
+          {
+            "node": "Build News Query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build News Query": {
+      "main": [
+        [
+          {
+            "node": "Get Cached Briefing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Cached Briefing": {
+      "main": [
+        [
+          {
+            "node": "Cache Hit?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cache Hit?": {
+      "main": [
+        [
+          {
+            "node": "Restore Cached Briefing",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Search Latest News",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Restore Cached Briefing": {
+      "main": [
+        [
+          {
+            "node": "Respond (Cache Hit)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Latest News": {
+      "main": [
+        [
+          {
+            "node": "Parse Articles",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Articles": {
+      "main": [
+        [
+          {
+            "node": "Summarize (Gemini)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Summarize (Gemini)": {
+      "main": [
+        [
+          {
+            "node": "Validate Briefing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Briefing": {
+      "main": [
+        [
+          {
+            "node": "Respond (Fresh)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond (Fresh)": {
+      "main": [
+        [
+          {
+            "node": "Prepare Cache Row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Cache Row": {
+      "main": [
+        [
+          {
+            "node": "Insert Cache Row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

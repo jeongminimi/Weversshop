@@ -1,0 +1,117 @@
+{
+  "id": "WvsCacheSetup001",
+  "name": "Weversshop - Setup Cache Tables (1회 실행)",
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "c0000000-0000-4000-8000-000000000001",
+      "name": "Run Once"
+    },
+    {
+      "parameters": {
+        "resource": "table",
+        "operation": "create",
+        "tableName": "member_news_cache",
+        "columns": {
+          "column": [
+            {
+              "name": "date",
+              "type": "string"
+            },
+            {
+              "name": "artist",
+              "type": "string"
+            },
+            {
+              "name": "member",
+              "type": "string"
+            },
+            {
+              "name": "news_data",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {
+          "createIfNotExists": true
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        240,
+        0
+      ],
+      "id": "c0000000-0000-4000-8000-000000000002",
+      "name": "Create member_news_cache"
+    },
+    {
+      "parameters": {
+        "resource": "table",
+        "operation": "create",
+        "tableName": "daily_curation",
+        "columns": {
+          "column": [
+            {
+              "name": "date",
+              "type": "string"
+            },
+            {
+              "name": "artist",
+              "type": "string"
+            },
+            {
+              "name": "curation_data",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {
+          "createIfNotExists": true
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        480,
+        0
+      ],
+      "id": "c0000000-0000-4000-8000-000000000003",
+      "name": "Create daily_curation"
+    }
+  ],
+  "connections": {
+    "Run Once": {
+      "main": [
+        [
+          {
+            "node": "Create member_news_cache",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create member_news_cache": {
+      "main": [
+        [
+          {
+            "node": "Create daily_curation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

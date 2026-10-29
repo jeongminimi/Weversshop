@@ -80,33 +80,58 @@ export default function Home() {
   const [lastSyncTime, setLastSyncTime] = useState("최근 동기화 완료");
 
   // n8n 상시 가동 엔드포인트 URL
-  const N8N_WEBHOOK_URL = "https://jmlee91.app.n8n.cloud/webhook/curation";
+  const N8N_WEBHOOK_URL = `${process.env.REACT_APP_N8N_BASE_URL || "https://jmlee91.app.n8n.cloud/webhook"}/curation`;
+
+  // 현재 슬라이더에서 선택된 아티스트 (사용자 관심 신호)
+  const selectedArtist = artistsData[activeStarIdx] || artistsData[0];
 
   // n8n 데이터 비동기 호출 함수
+  // 선택 아티스트 + 장바구니를 사용자 신호로 보내고, AI가 카탈로그에서 고른 상품만 표시
   const fetchN8nCurationData = useCallback(
-    async (artistName = "세븐틴") => {
+    async (artist, signal) => {
       if (!N8N_WEBHOOK_URL) return;
 
-      const targetArtist =
-        typeof artistName === "string" ? artistName : "세븐틴";
+      let cart = [];
+      try {
+        cart = JSON.parse(localStorage.getItem("contextverse_cart") || "[]");
+      } catch (e) {
+        cart = [];
+      }
 
       try {
         setIsLoading(true);
-        const res = await fetch(
-          `${N8N_WEBHOOK_URL}?artist=${encodeURIComponent(targetArtist)}`,
-        );
+        const res = await fetch(N8N_WEBHOOK_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            artist: artist?.name || "세븐틴",
+            artistId: artist?.id || "",
+            cart: cart.map(({ id, title, quantity, badges }) => ({
+              id,
+              title,
+              quantity,
+              badges,
+            })),
+            catalog: goodsCatalog.map(({ id, name, category, price, artist }) => ({
+              id,
+              name,
+              category,
+              price,
+              artist,
+            })),
+          }),
+          signal,
+        });
 
         if (res.ok) {
           const data = await res.json();
-          const rawList = data.recommendedGoods || data || [];
+          const rawList = data.recommendedGoods || [];
 
           // AI 생성 데이터와 goods_catalog.json 마스터 데이터 클라이언트 조인
-          const formattedItems = rawList.map((aiItem, idx) => {
-            const catalogItem =
-              (typeof goodsCatalog !== "undefined" &&
-                goodsCatalog.find((g) => g.id === aiItem.id)) ||
-              (typeof goodsCatalog !== "undefined" && goodsCatalog[idx]) ||
-              {};
+          // 💡 카탈로그에 없는 id는 다른 상품으로 대체하지 않고 제외
+          const formattedItems = rawList.map((aiItem) => {
+            const catalogItem = goodsCatalog.find((g) => g.id === aiItem.id);
+            if (!catalogItem) return null;
 
             const name = catalogItem.name || aiItem.name || "세븐틴 공식 MD";
             const price = catalogItem.price
@@ -124,14 +149,14 @@ export default function Home() {
 
             return {
               ...aiItem,
-              id: catalogItem.id || aiItem.id || `g-${idx + 1}`,
+              id: catalogItem.id,
               headline:
                 aiItem.headline ||
                 data.headline ||
                 "실시간 활동 기반 맞춤 큐레이션",
               category_badge:
                 aiItem.category_badge || data.contextKeyword || "AI REALTIME",
-              source: "n8n Gemini 분석",
+              source: data.source || "n8n AI 분석",
               reason: aiItem.reason || aiItem.quote || "최신 활동 맞춤 아이템",
               quote: aiItem.reason || aiItem.quote || "최신 활동 맞춤 아이템",
               product: {
@@ -147,28 +172,41 @@ export default function Home() {
                 tag: catalogItem.category || "MD PICK",
               },
             };
-          });
+          }).filter(Boolean);
 
-          setCurationItems(formattedItems);
-          setLastSyncTime(new Date().toLocaleTimeString());
+          if (formattedItems.length > 0) {
+            setCurationItems(formattedItems);
+            setLastSyncTime(new Date().toLocaleTimeString());
+          }
         } else {
           console.warn(`n8n 서버 응답 오류: 상태 코드 ${res.status}`);
         }
       } catch (err) {
+        if (err.name === "AbortError") return;
         console.warn(
           "n8n 실시간 연동 실패, 기본 캐싱 데이터를 유지합니다.",
           err,
         );
       } finally {
-        setIsLoading(false);
+        // 💡 새 요청으로 취소된 경우 로딩 상태는 새 요청이 관리
+        if (!signal?.aborted) setIsLoading(false);
       }
     },
     [N8N_WEBHOOK_URL],
   );
 
+  // 아티스트 선택이 바뀌면 잠시 기다렸다가(연속 클릭 방지) 추천 재요청
   useEffect(() => {
-    fetchN8nCurationData("세븐틴");
-  }, [fetchN8nCurationData]);
+    const controller = new AbortController();
+    const timer = setTimeout(
+      () => fetchN8nCurationData(selectedArtist, controller.signal),
+      600,
+    );
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [fetchN8nCurationData, selectedArtist]);
 
   // ==========================================
   // [Static] 3. 팬 소통 퀵 메뉴 (6종)
@@ -613,7 +651,7 @@ export default function Home() {
                 variant="outline-secondary"
                 size="sm"
                 className="rounded-circle p-2 text-info border-secondary"
-                onClick={() => fetchN8nCurationData("세븐틴")}
+                onClick={() => fetchN8nCurationData(selectedArtist)}
                 title="데이터 새로고침"
               >
                 <FaSyncAlt size={12} className={isLoading ? "fa-spin" : ""} />

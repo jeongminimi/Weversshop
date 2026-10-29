@@ -32,6 +32,20 @@ const getAssetPath = (path) => {
   return `${process.env.PUBLIC_URL}/${cleanPath}`;
 };
 
+// 💡 n8n Webhook 기본 주소 (.env의 REACT_APP_N8N_BASE_URL로 교체 가능)
+const N8N_BASE_URL =
+  process.env.REACT_APP_N8N_BASE_URL || "https://jmlee91.app.n8n.cloud/webhook";
+// 기사 검색 + Gemini 요약(최대 3회 재시도)까지 걸리는 시간을 고려
+const NEWS_TIMEOUT_MS = 55000;
+
+// 💡 n8n 연동 실패 시 멤버 프로필 기반 대체 브리핑 생성
+const buildFallbackNews = (member) => ({
+  activity_tag: member.role || "멤버 소개",
+  headline: `${member.name}${member.engName ? ` (${member.engName})` : ""}`,
+  summary: member.desc || "",
+  isFallback: true,
+});
+
 export default function ArtistDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -70,9 +84,13 @@ export default function ArtistDetail() {
       setMemberNews(null);
       const targetArtist = artistInfo?.name || "세븐틴";
       const controller = new AbortController();
+      let cancelled = false;
+      // 💡 응답 지연 시 타임아웃으로 요청 중단
+      const timeoutId = setTimeout(() => controller.abort(), NEWS_TIMEOUT_MS);
 
       fetch(
-        `https://jmlee91.app.n8n.cloud/webhook/member-news?artist=${encodeURIComponent(targetArtist)}&member=${encodeURIComponent(currentMember.name)}&_t=${Date.now()}`,
+        `${N8N_BASE_URL}/member-news?artist=${encodeURIComponent(targetArtist)}&member=${encodeURIComponent(currentMember.name)}&_t=${Date.now()}`,
+        { signal: controller.signal },
       )
         .then((res) => {
           // 💡 HTTP 에러 처리 추가 (404, 500 등)
@@ -80,19 +98,26 @@ export default function ArtistDetail() {
           return res.json();
         })
         .then((data) => {
-          setMemberNews(data);
+          if (cancelled) return;
+          setMemberNews(
+            data && data.headline ? data : buildFallbackNews(currentMember),
+          );
         })
         .catch((err) => {
-          if (err.name === "AbortError") {
-            console.log("요청이 취소되었습니다.");
-          } else {
-            console.error("멤버 소식 조회 실패:", err);
-          }
+          // 💡 모달 닫힘/멤버 전환으로 취소된 요청은 무시
+          if (cancelled) return;
+          console.warn("멤버 소식 조회 실패, 기본 브리핑을 표시합니다:", err);
+          setMemberNews(buildFallbackNews(currentMember));
         })
         .finally(() => {
-          setIsNewsLoading(false);
+          clearTimeout(timeoutId);
+          if (!cancelled) setIsNewsLoading(false);
         });
-      return () => controller.abort();
+      return () => {
+        cancelled = true;
+        clearTimeout(timeoutId);
+        controller.abort();
+      };
     }
   }, [showPromptModal, currentMember, artistInfo?.name]);
 
@@ -328,7 +353,11 @@ export default function ArtistDetail() {
                   <span className="badge bg-primary px-2 py-1">
                     {memberNews.activity_tag || "최근 활동"}
                   </span>
-                  <small className="text-muted">실시간 뉴스 브리핑</small>
+                  <small className="text-muted">
+                    {memberNews.isFallback
+                      ? "기본 프로필 브리핑 (실시간 연동 대기 중)"
+                      : `실시간 뉴스 브리핑 · ${memberNews.source || "n8n"}`}
+                  </small>
                 </div>
 
                 <h6
@@ -350,6 +379,29 @@ export default function ArtistDetail() {
                     "{memberNews.fan_cheer}"
                   </div>
                 )}
+
+                {/* 브리핑 근거가 된 최신 기사 */}
+                {Array.isArray(memberNews.articles) &&
+                  memberNews.articles.length > 0 && (
+                    <ul className="list-unstyled small mb-0 mt-3 pt-2 border-top">
+                      {memberNews.articles.map((article) => (
+                        <li key={article.link} className="mb-1 text-truncate">
+                          <a
+                            href={article.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-decoration-none"
+                            title={article.title}
+                          >
+                            {article.title}
+                          </a>
+                          <span className="text-muted ms-1">
+                            · {article.source} {article.pubDate}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
               </div>
             ) : (
               <p
