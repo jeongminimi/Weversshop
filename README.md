@@ -50,23 +50,34 @@ ArtistDetail.js ──GET /member-news──▶ 브리핑 캐시 조회
 
 ### 1. 프론트엔드
 ```bash
+git clone https://github.com/jeongminimi/Weversshop.git
+cd Weversshop
 npm install
-npm start
 ```
 
 ### 2. 환경 변수
 | 파일 | 용도 | 값 |
 | --- | --- | --- |
-| `.env.development.local` | `npm start` (git 제외) | `REACT_APP_N8N_BASE_URL=http://localhost:5678/webhook` |
+| `.env.development.local` | `npm start` | `REACT_APP_N8N_BASE_URL=http://localhost:5678/webhook` |
 | `.env` | `npm run build` / `deploy` | `REACT_APP_N8N_BASE_URL=https://<n8n 주소>/webhook` |
+
+> ⚠️ `.env.development.local`은 git에 올라가지 않습니다. **새 컴퓨터에서는 프로젝트 루트에 이 파일을 직접 만들고** 위 한 줄을 넣어야 로컬 n8n과 연결됩니다.
 
 > Gemini API 키는 `.env`에 넣지 않습니다. React 환경 변수는 빌드 결과물에 그대로 노출되므로, 키는 n8n Credentials에만 등록합니다.
 
 ### 3. n8n 워크플로우
+```bash
+npm install -g n8n
+n8n          # 브라우저에서 http://localhost:5678 접속
+```
 1. n8n **Credentials**에 `Google Gemini(PaLM) Api` 계정을 등록합니다. ([API 키 발급](https://aistudio.google.com/apikey))
 2. `n8n/` 폴더의 워크플로우 3개를 **Import from File**로 가져옵니다.
-3. `setup-cache-tables` 워크플로우를 한 번 실행해 캐시 테이블(`member_news_cache`, `daily_curation`)을 만듭니다.
-4. `member-news`, `algorithm-choice` 워크플로우의 Gemini 노드에 계정을 연결하고 **Publish**합니다.
+3. `setup-cache-tables` 워크플로우를 **Execute workflow**로 한 번 실행해 캐시 테이블(`member_news_cache`, `daily_curation`)을 만듭니다.
+4. `member-news`의 **Summarize (Gemini)** 노드, `algorithm-choice`의 **Map Context to Goods (Gemini)** 노드를 열어 **1번에서 등록한 계정을 직접 선택**합니다.
+   > JSON에 저장된 계정 ID는 원래 작업한 PC의 것이라, 새 컴퓨터에서는 자동으로 연결되지 않습니다. (API 키 자체는 JSON에 포함되지 않습니다.)
+5. 두 워크플로우를 **Publish**한 뒤 `npm start`로 실행합니다.
+
+> Gemini 무료 등급은 **분당 5회, 하루 20회** 제한이 있습니다. 한도를 넘으면 AI 대신 기사 제목 브리핑, 규칙 기반 추천으로 대체 표시됩니다.
 
 ### 4. 배포
 ```bash
